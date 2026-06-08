@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test de Edad Funcional — MCR Biohacking</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<style>
+  :root {
+    --negro: #0a0a0a;
+    --carbon: #141414;
+    --gris-oscuro: #1e1e1e;
+    --gris-medio: #2a2a2a;
+    --gris-borde: #333;
+    --gris-texto: #888;
+    --blanco: #f5f5f0;
+    --blanco-suave: #d0cfc8;
+    --acento: #c8f000;
+    --acento-dim: #8aaa00;
+    --rojo: #ff3c3c;
+    --naranja: #ff8c00;
+    --verde: #00e57a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--negro);
+    color: var(--blanco);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(10,10,10,0.95);
+    border-bottom: 1px solid var(--gris-borde);
+    backdrop-filter: blur(10px);
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--acento);
+  }
+  .logo span { color: var(--blanco-suave); }
+  .progreso-header {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gris-texto);
+  }
+  .progreso-header.visible { display: flex; }
+  .barra-prog {
+    width: 120px;
+    height: 3px;
+    background: var(--gris-medio);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .barra-prog-fill {
+    height: 100%;
+    background: var(--acento);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* SCREENS */
+  .screen {
+    display: none;
+    min-height: 100vh;
+    padding: 100px 24px 40px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* TIPOGRAFÍA */
+  .titulo-grande {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 12vw, 72px);
+    line-height: 0.95;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  .titulo-grande .acento { color: var(--acento); }
+  .subtitulo {
+    font-size: 15px;
+    color: var(--gris-texto);
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+  .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--acento-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* INPUTS */
+  .campo {
+    margin-bottom: 20px;
+  }
+  input[type="text"], input[type="email"], input[type="number"], input[type="password"] {
+    width: 100%;
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    color: var(--blanco);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--acento); }
+
+  .sexo-opciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* BOTONES */
+  .btn-principal {
+    width: 100%;
+    background: var(--acento);
+    color: var(--negro);
+    border: none;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+    margin-top: 8px;
+  }
+  .btn-principal:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-principal:active { transform: translateY(0); }
+
+  .btn-opcion {
+    width: 100%;
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 18px 16px;
+    color: var(--blanco);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+  .btn-opcion:hover { border-color: var(--acento); background: rgba(200,240,0,0.05); }
+  .btn-opcion.seleccionado { border-color: var(--acento); background: rgba(200,240,0,0.08); }
+  .btn-opcion .icono { font-size: 24px; }
+  .btn-opcion .texto-opcion { flex: 1; }
+  .btn-opcion .texto-opcion strong { display: block; margin-bottom: 2px; }
+  .btn-opcion .texto-opcion small { color: var(--gris-texto); font-size: 13px; }
+
+  .btn-secundario {
+    background: transparent;
+    border: 1px solid var(--gris-borde);
+    color: var(--blanco-suave);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+    margin-top: 10px;
+  }
+  .btn-secundario:hover { border-color: var(--blanco-suave); }
+
+  /* TEST SCREEN */
+  .test-numero {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    color: var(--gris-borde);
+    line-height: 1;
+    margin-bottom: -10px;
+  }
+  .test-nombre {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    color: var(--acento);
+  }
+  .test-area {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gris-texto);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .instruccion-box {
+    background: var(--gris-oscuro);
+    border-left: 3px solid var(--acento);
+    border-radius: 0 8px 8px 0;
+    padding: 16px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--blanco-suave);
+  }
+  .input-resultado {
+    margin-bottom: 8px;
+  }
+  .input-resultado label {
+    display: block;
+    font-size: 13px;
+    color: var(--gris-texto);
+    margin-bottom: 6px;
+  }
+
+  /* MULTIFIELD */
+  .multifield { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+
+  /* RESULTADO */
+  .edad-funcional-display {
+    text-align: center;
+    padding: 32px 0;
+  }
+  .edad-funcional-display .numero {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 96px;
+    line-height: 1;
+    color: var(--acento);
+  }
+  .edad-funcional-display .etiqueta {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--gris-texto);
+    margin-top: 4px;
+  }
+  .edad-funcional-display .comparacion {
+    font-size: 14px;
+    color: var(--blanco-suave);
+    margin-top: 12px;
+  }
+
+  /* RADAR */
+  .radar-container {
+    background: var(--gris-oscuro);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .radar-titulo {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gris-texto);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* AREAS CARDS */
+  .areas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .area-card {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .area-card .area-nombre {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gris-texto);
+    margin-bottom: 6px;
+  }
+  .area-card .area-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .area-card .area-barra {
+    height: 3px;
+    background: var(--gris-medio);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .area-card .area-barra-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+  .score-excelente { color: var(--verde); }
+  .score-bueno { color: var(--acento); }
+  .score-regular { color: var(--naranja); }
+  .score-bajo { color: var(--rojo); }
+  .fill-excelente { background: var(--verde); }
+  .fill-bueno { background: var(--acento); }
+  .fill-regular { background: var(--naranja); }
+  .fill-bajo { background: var(--rojo); }
+
+  /* MENSAJE PERSONALIZADO */
+  .mensaje-box {
+    background: linear-gradient(135deg, rgba(200,240,0,0.08), rgba(200,240,0,0.02));
+    border: 1px solid rgba(200,240,0,0.2);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--blanco-suave);
+  }
+
+  /* PROGRESION */
+  .progresion-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,229,122,0.1);
+    border: 1px solid rgba(0,229,122,0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--verde);
+    margin-bottom: 16px;
+  }
+
+  /* HISTORIAL */
+  .historial-item {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+  }
+  .historial-fecha {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gris-texto);
+  }
+
+  /* DASHBOARD */
+  .dash-header {
+    background: var(--gris-oscuro);
+    border-bottom: 1px solid var(--gris-borde);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+  }
+  .alumno-row {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .alumno-row:hover { border-color: var(--acento); }
+  .alumno-nombre { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .alumno-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gris-texto);
+    display: flex;
+    gap: 16px;
+  }
+  .tag {
+    display: inline-block;
+    background: rgba(200,240,0,0.1);
+    color: var(--acento);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  /* WHATSAPP BTN */
+  .btn-wa {
+    background: #25D366;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    transition: opacity 0.2s;
+  }
+  .btn-wa:hover { opacity: 0.9; }
+
+  /* LOADER */
+  .loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    gap: 16px;
+  }
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--gris-borde);
+    border-top-color: var(--acento);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* CONFETTI */
+  .confetti-container {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 999;
+    overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    animation: caer 2.5s ease-in forwards;
+  }
+  @keyframes caer {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--carbon);
+    border: 1px solid var(--gris-borde);
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    max-width: 420px;
+  }
+  .modal h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .modal p { font-size: 14px; color: var(--gris-texto); margin-bottom: 20px; }
+
+  /* SEPARADOR */
+  .sep { height: 1px; background: var(--gris-borde); margin: 20px 0; }
+
+  /* ANIMACIÓN ENTRADA */
+  .screen.active > * {
+    animation: aparecer 0.4s ease forwards;
+  }
+  @keyframes aparecer {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* BIENVENIDA RETORNO */
+  .bienvenida-retorno {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .bienvenida-retorno .avatar {
+    width: 44px;
+    height: 44px;
+    background: var(--acento);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--negro);
+    flex-shrink: 0;
+  }
+
+  .error-msg { color: var(--rojo); font-size: 13px; margin-top: 6px; display: none; }
+
+  /* DETAIL VIEW */
+  .detail-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gris-texto);
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .eval-card {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .eval-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .eval-card-fecha {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gris-texto);
+  }
+  .eval-card-edad {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--acento);
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">MCR <span>Biohacking</span></div>
+  <div class="progreso-header" id="progHeaderEl">
+    <span id="progTexto">Test 1 de 5</span>
+    <div class="barra-prog">
+      <div class="barra-prog-fill" id="barraFill" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFETTI -->
+<div class="confetti-container" id="confettiEl"></div>
+
+<!-- MODAL LOGIN DASHBOARD -->
+<div class="modal-overlay" id="modalLogin">
+  <div class="modal">
+    <h3>Acceso Privado</h3>
+    <p>Solo para el equipo MCR</p>
+    <div class="campo">
+      <div class="label">Contraseña</div>
+      <input type="password" id="inputPass" placeholder="••••••••" style="font-size:16px;">
+      <div class="error-msg" id="errorPass">Contraseña incorrecta</div>
+    </div>
+    <button class="btn-principal" onclick="verificarPass()">ENTRAR</button>
+    <button class="btn-secundario" onclick="cerrarModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL DETALLE ALUMNO -->
+<div class="modal-overlay" id="modalAlumno">
+  <div class="modal" style="max-height:85vh;overflow-y:auto;">
+    <button class="detail-back" onclick="cerrarModalAlumno()">← Volver</button>
+    <div id="alumnoDetalle"></div>
+  </div>
+</div>
+
+<!-- ==================== SCREENS ==================== -->
+
+<!-- S0: INICIO -->
+<div class="screen active" id="s0">
+  <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+    <div class="label">Test gratuito · 10 minutos</div>
+    <div class="titulo-grande">¿Cuántos<br>años tiene<br><span class="acento">tu cuerpo?</span></div>
+    <div class="subtitulo">Descubrí tu edad funcional real con tests validados científicamente. Resultado inmediato y personalizado.</div>
+    <button class="btn-principal" onclick="irARegistro()">COMENZAR EVALUACIÓN</button>
+    <button class="btn-secundario" onclick="abrirLogin()">Acceso profesional →</button>
+  </div>
+  <div style="text-align:center; padding-top:24px;">
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gris-texto);letter-spacing:2px;">MCR BIOHACKING · @mcr.biohacking</div>
+  </div>
+</div>
+
+<!-- S1: REGISTRO -->
+<div class="screen" id="s1">
+  <div class="label">Paso 1 — Tus datos</div>
+  <div class="titulo-grande" style="font-size:40px;margin-bottom:8px;">Empecemos<br>por vos</div>
+  <div class="subtitulo">Tus datos se guardan de forma segura para poder mostrarte tu progreso en evaluaciones futuras.</div>
+
+  <div id="bienvenidaRetornoEl" class="bienvenida-retorno" style="display:none;">
+    <div class="avatar" id="avatarLetra">M</div>
+    <div>
+      <div style="font-size:15px;font-weight:500;" id="bienvenidaNombre">¡Hola de nuevo!</div>
+      <div style="font-size:13px;color:var(--gris-texto);">Tus datos están cargados. Podés continuar directamente.</div>
+    </div>
+  </div>
+
+  <div class="campo">
+    <div class="label">Nombre completo</div>
+    <input type="text" id="inNombre" placeholder="Tu nombre" style="font-size:16px;">
+  </div>
+  <div class="campo">
+    <div class="label">Email</div>
+    <input type="email" id="inEmail" placeholder="tu@email.com"
+      onblur="validarEmailBlur(this)">
+    <div class="error-msg" id="errorEmail">Email no válido</div>
+  </div>
+  <div class="campo">
+    <div class="label">Edad</div>
+    <input type="number" id="inEdad" placeholder="Ej: 45" min="18" max="99" style="font-size:16px;">
+  </div>
+  <div class="campo">
+    <div class="label">Sexo</div>
+    <div class="sexo-opciones">
+      <button class="btn-opcion" onclick="selSexo('M',this)" id="btnM">
+        <span class="icono">♂</span>
+        <span>Masculino</span>
+      </button>
+      <button class="btn-opcion" onclick="selSexo('F',this)" id="btnF">
+        <span class="icono">♀</span>
+        <span>Femenino</span>
+      </button>
+    </div>
+  </div>
+  <button class="btn-principal" onclick="siguienteDesdeRegistro()">SIGUIENTE →</button>
+</div>
+
+<!-- S2: PREOCUPACIÓN -->
+<div class="screen" id="s2">
+  <div class="label">Paso 2 — Tu foco</div>
+  <div class="titulo-grande" style="font-size:40px;margin-bottom:8px;">¿Qué te<br>preocupa<br>más?</div>
+  <div class="subtitulo">Elegí una área y armamos tu evaluación personalizada.</div>
+
+  <button class="btn-opcion" onclick="selArea('equilibrio',this)">
+    <span class="icono">⚖️</span>
+    <div class="texto-opcion">
+      <strong>Equilibrio</strong>
+      <small>Estabilidad, coordinación, riesgo de caídas</small>
+    </div>
+  </button>
+  <button class="btn-opcion" onclick="selArea('fuerza',this)">
+    <span class="icono">💪</span>
+    <div class="texto-opcion">
+      <strong>Fuerza</strong>
+      <small>Masa muscular, potencia, sarcopenia</small>
+    </div>
+  </button>
+  <button class="btn-opcion" onclick="selArea('cardio',this)">
+    <span class="icono">❤️</span>
+    <div class="texto-opcion">
+      <strong>Cardio</strong>
+      <small>Resistencia, recuperación, capacidad aeróbica</small>
+    </div>
+  </button>
+  <button class="btn-opcion" onclick="selArea('movilidad',this)">
+    <span class="icono">🤸</span>
+    <div class="texto-opcion">
+      <strong>Movilidad</strong>
+      <small>Flexibilidad, rango de movimiento, rigidez</small>
+    </div>
+  </button>
+  <button class="btn-principal" style="margin-top:8px;" onclick="iniciarTests()">ARMAR MI EVALUACIÓN →</button>
+</div>
+
+<!-- S3: TEST (dinámico) -->
+<div class="screen" id="s3">
+  <div class="test-numero" id="tNumero">01</div>
+  <div class="test-nombre" id="tNombre">Nombre del test</div>
+  <div class="test-area" id="tArea">Área</div>
+  <div class="instruccion-box" id="tInstruccion">Instrucción...</div>
+  <div id="tInputArea"></div>
+  <button class="btn-principal" onclick="siguienteTest()" id="btnSiguienteTest">SIGUIENTE →</button>
+  <button class="btn-secundario" onclick="saltarTest()" style="font-size:13px;color:var(--gris-texto);">⊘ No puedo hacer este test (no se contabiliza)</button>
+</div>
+
+<!-- S4: RESULTADO PARCIAL -->
+<div class="screen" id="s4">
+  <div class="label">Resultado preliminar — 5 tests</div>
+  <div class="edad-funcional-display">
+    <div class="numero" id="edadFuncParcial">--</div>
+    <div class="etiqueta">EDAD FUNCIONAL ESTIMADA</div>
+    <div class="comparacion" id="compParcial"></div>
+  </div>
+  <div id="progresionBadgeEl" style="display:none;">
+    <div class="progresion-badge" id="progresionBadge">↑ Mejoraste X años desde tu última evaluación</div>
+  </div>
+  <div class="areas-grid" id="areasGridParcial"></div>
+  <div class="mensaje-box" id="mensajeParcial"></div>
+  <div style="background:rgba(200,240,0,0.06);border:1px solid rgba(200,240,0,0.15);border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;color:var(--blanco-suave);line-height:1.6;">
+    ⚠️ <strong>Este es un resultado preliminar</strong> basado en 5 tests. Con 3 tests adicionales obtenés un análisis más preciso y el radar completo de tus 4 áreas.
+  </div>
+  <div class="sep"></div>
+  <div class="label">¿Querés el análisis completo?</div>
+  <div class="subtitulo" style="margin-bottom:16px;">3 tests adicionales enfocados en tu área más débil. Toma 5 minutos más.</div>
+  <button class="btn-principal" onclick="iniciarTestsExtra()" id="btnExtraAuto">SÍ, QUIERO EL ANÁLISIS COMPLETO →</button>
+
+  <!-- Selector de área opcional -->
+  <div id="selectorAreaExtra" style="display:none;margin-top:12px;">
+    <div class="label" style="margin-bottom:8px;">Elegí el área a explorar</div>
+    <button class="btn-opcion" onclick="iniciarTestsExtraArea('equilibrio',this)">
+      <span class="icono">⚖️</span>
+      <div class="texto-opcion"><strong>Equilibrio</strong><small>Estabilidad y coordinación</small></div>
+    </button>
+    <button class="btn-opcion" onclick="iniciarTestsExtraArea('fuerza',this)">
+      <span class="icono">💪</span>
+      <div class="texto-opcion"><strong>Fuerza</strong><small>Masa muscular y potencia</small></div>
+    </button>
+    <button class="btn-opcion" onclick="iniciarTestsExtraArea('cardio',this)">
+      <span class="icono">❤️</span>
+      <div class="texto-opcion"><strong>Cardio</strong><small>Resistencia y recuperación</small></div>
+    </button>
+    <button class="btn-opcion" onclick="iniciarTestsExtraArea('movilidad',this)">
+      <span class="icono">🤸</span>
+      <div class="texto-opcion"><strong>Movilidad</strong><small>Flexibilidad y rango de movimiento</small></div>
+    </button>
+  </div>
+
+  <button class="btn-secundario" onclick="mostrarSelectorArea()" id="btnElegirArea" style="margin-top:8px;">Elegir otra área →</button>
+  <button class="btn-secundario" onclick="irAResultadoFinal(false)" style="margin-top:6px;font-size:13px;color:var(--gris-texto);">Continuar solo con estos 5 tests</button>
+</div>
+
+<!-- S5: TESTS EXTRA (mismo layout que S3 pero extra) -->
+<div class="screen" id="s5">
+  <div class="label">Análisis completo</div>
+  <div class="test-numero" id="tNumeroEx">01</div>
+  <div class="test-nombre" id="tNombreEx">Nombre del test</div>
+  <div class="test-area" id="tAreaEx">Área</div>
+  <div class="instruccion-box" id="tInstruccionEx">Instrucción...</div>
+  <div id="tInputAreaEx"></div>
+  <button class="btn-principal" onclick="siguienteTestExtra()" id="btnSigExtra">SIGUIENTE →</button>
+  <button class="btn-secundario" onclick="saltarTestExtra()" style="font-size:13px;color:var(--gris-texto);">⊘ No puedo hacer este test (no se contabiliza)</button>
+</div>
+
+<!-- S6: RESULTADO FINAL -->
+<div class="screen" id="s6">
+  <div class="label">Tu resultado final</div>
+  <div class="edad-funcional-display">
+    <div class="numero" id="edadFuncFinal">--</div>
+    <div class="etiqueta">EDAD FUNCIONAL</div>
+    <div class="comparacion" id="compFinal"></div>
+  </div>
+  <div id="progresionBadgeFinalEl" style="display:none;">
+    <div class="progresion-badge" id="progresionBadgeFinal"></div>
+  </div>
+  <div class="radar-container">
+    <div class="radar-titulo">Perfil por áreas</div>
+    <canvas id="radarCanvas" width="260" height="260"></canvas>
+  </div>
+  <div class="areas-grid" id="areasGridFinal"></div>
+  <div class="mensaje-box" id="mensajeFinal"></div>
+  <div class="sep"></div>
+  <div class="label">Recibí tu informe</div>
+  <div class="campo">
+    <input type="email" id="inEmailFinal" placeholder="tu@email.com" style="font-size:16px;">
+  </div>
+  <button class="btn-wa" onclick="enviarWA()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    COMPARTIR POR WHATSAPP
+  </button>
+  <button class="btn-principal" onclick="enviarEmail()" id="btnEmail">ENVIAR INFORME AL EMAIL</button>
+  <div class="sep"></div>
+  <div class="mensaje-box" style="text-align:center;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:8px;">¿Querés mejorar tus resultados?</div>
+    <div style="font-size:14px;color:var(--gris-texto);margin-bottom:14px;">Programa +L — Longevidad Funcional para adultos mayores de 50</div>
+    <button class="btn-principal" onclick="window.open('https://wa.me/543489536382?text=Hola%20Martín,%20hice%20el%20Test%20de%20Edad%20Funcional%20y%20quiero%20saber%20más%20sobre%20el%20Programa%20+L','_blank')" style="font-size:16px;padding:12px;">QUIERO SABER MÁS SOBRE +L</button>
+  </div>
+  <button class="btn-secundario" onclick="irAInicio()" style="margin-top:10px;">Nueva evaluación</button>
+</div>
+
+<!-- S7: DASHBOARD -->
+<div class="screen" id="s7" style="padding-left:0;padding-right:0;max-width:100%;">
+  <div class="dash-header">
+    <div>
+      <div class="logo" style="font-size:18px;">MCR <span>Dashboard</span></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gris-texto);margin-top:2px;" id="dashCount">Cargando alumnos...</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn-secundario" style="width:auto;padding:8px 14px;font-size:12px;" onclick="exportarCSV()">↓ CSV</button>
+      <button class="btn-secundario" style="width:auto;padding:8px 16px;font-size:13px;" onclick="irAInicio()">Salir</button>
+    </div>
+  </div>
+  <div style="padding:16px 24px 0;">
+    <input type="text" id="dashBuscar" placeholder="Buscar por nombre o email..." oninput="filtrarAlumnos(this.value)"
+      style="width:100%;background:var(--gris-oscuro);border:1px solid var(--gris-borde);border-radius:8px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--blanco);outline:none;">
+  </div>
+  <div style="padding:16px 24px;">
+    <div id="dashLoader" class="loader"><div class="spinner"></div><div style="font-size:14px;color:var(--gris-texto);">Cargando datos...</div></div>
+    <div id="dashLista" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<script>
+// ===================== CONFIGURACIÓN =====================
+const SUPABASE_URL = 'https://aqzkryvdrmalesbnfjsf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxemtyeXZkcm1hbGVzYm5mamFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU3MjE2MDAsImV4cCI6MjAzMTI5NzYwMH0.kDVmr0dKP5vkPFY6DRN_LS9lya8-4S8oueiztKvnGd0';
+const TABLA = 'msrt_v3';
+const PASS_DASH = 'MCR2026';
+const WA_NUM = '543489536382';
+
+// EmailJS — configurar cuando tengas las claves
+const EMAILJS_SERVICE = 'TU_SERVICE_ID';
+const EMAILJS_TEMPLATE = 'TU_TEMPLATE_ID';
+const EMAILJS_KEY = 'TU_PUBLIC_KEY';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ===================== CATÁLOGO DE TESTS =====================
+const TESTS = {
+  equilibrio: [
+    {
+      id: 'apoyo_mono',
+      nombre: 'Apoyo Monopodal',
+      area: 'Equilibrio',
+      instruccion: 'De pie sin calzado. Levantá un pie del suelo y mantené el equilibrio. Cronometrá cuántos segundos podés sostenerte sin apoyarte ni mover el pie de apoyo. Realizá el intento con cada pierna y anotá el mejor.',
+      campos: [{ key: 'seg', label: 'Segundos mantenidos (mejor intento)', tipo: 'number', placeholder: 'Ej: 25' }],
+      calcular: (v, edad, sexo) => {
+        const s = parseFloat(v.seg) || 0;
+        if (s >= 45) return { puntos: 4, nivel: 'Excelente' };
+        if (s >= 30) return { puntos: 3, nivel: 'Bueno' };
+        if (s >= 15) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'romberg',
+      nombre: 'Test de Romberg',
+      area: 'Equilibrio',
+      instruccion: 'De pie, pies juntos, brazos cruzados en el pecho. Cerrá los ojos y mantené el equilibrio. Cronometrá cuántos segundos te sostenés sin abrir los ojos ni separar los pies.',
+      campos: [{ key: 'seg', label: 'Segundos con ojos cerrados', tipo: 'number', placeholder: 'Ej: 20' }],
+      calcular: (v, edad, sexo) => {
+        const s = parseFloat(v.seg) || 0;
+        if (s >= 30) return { puntos: 4, nivel: 'Excelente' };
+        if (s >= 20) return { puntos: 3, nivel: 'Bueno' };
+        if (s >= 10) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'tandem',
+      nombre: 'Marcha en Tándem',
+      area: 'Equilibrio',
+      instruccion: 'Caminá en línea recta colocando el talón de un pie contra los dedos del otro en cada paso. Realizá 10 pasos y contá cuántos podés hacer sin perder el equilibrio.',
+      campos: [{ key: 'pasos', label: 'Pasos completados sin perder equilibrio (máx 10)', tipo: 'number', placeholder: 'Ej: 8' }],
+      calcular: (v) => {
+        const p = parseFloat(v.pasos) || 0;
+        if (p >= 10) return { puntos: 4, nivel: 'Excelente' };
+        if (p >= 8) return { puntos: 3, nivel: 'Bueno' };
+        if (p >= 5) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'alcance_func',
+      nombre: 'Test de Alcance Funcional',
+      area: 'Equilibrio',
+      instruccion: 'De pie junto a una pared, levantá un brazo a 90°. Marcá la posición inicial de tu dedo medio en la pared. Inclinándote hacia adelante sin mover los pies, llegá lo más lejos posible. Medí la distancia recorrida por tu dedo.',
+      campos: [{ key: 'cm', label: 'Centímetros de alcance', tipo: 'number', placeholder: 'Ej: 28' }],
+      calcular: (v, edad, sexo) => {
+        const c = parseFloat(v.cm) || 0;
+        const ref = sexo === 'F' ? [15, 20, 25] : [18, 24, 30];
+        if (c >= ref[2]) return { puntos: 4, nivel: 'Excelente' };
+        if (c >= ref[1]) return { puntos: 3, nivel: 'Bueno' };
+        if (c >= ref[0]) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'cuatro_cuadrados',
+      nombre: 'Test de los 4 Cuadrados',
+      area: 'Equilibrio',
+      instruccion: 'Colocá 4 bastones/palos en forma de cruz en el suelo. Comenzando en el cuadrante 1, pasá al 2, 3, 4 y volvé al 1, sin pisar los bastones. Cronometrá el tiempo. Luego hacé el recorrido al revés.',
+      campos: [{ key: 'seg', label: 'Tiempo total (segundos, los dos recorridos)', tipo: 'number', placeholder: 'Ej: 14' }],
+      calcular: (v) => {
+        const s = parseFloat(v.seg) || 0;
+        if (s <= 10) return { puntos: 4, nivel: 'Excelente' };
+        if (s <= 14) return { puntos: 3, nivel: 'Bueno' };
+        if (s <= 20) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    }
+  ],
+  fuerza: [
+    {
+      id: 'silla_30',
+      nombre: 'Levantarse de la Silla 30 seg',
+      area: 'Fuerza',
+      instruccion: 'Sentate en una silla sin apoyabrazos con los brazos cruzados en el pecho. En 30 segundos, levantate completamente y volvé a sentarte tantas veces como puedas. Contá el número de repeticiones completas.',
+      campos: [{ key: 'reps', label: 'Repeticiones en 30 segundos', tipo: 'number', placeholder: 'Ej: 14' }],
+      calcular: (v, edad, sexo) => {
+        const r = parseFloat(v.reps) || 0;
+        const tabla = sexo === 'F'
+          ? (edad < 60 ? [10,13,16] : edad < 70 ? [9,12,15] : [8,11,14])
+          : (edad < 60 ? [12,15,18] : edad < 70 ? [11,14,17] : [10,13,16]);
+        if (r >= tabla[2]) return { puntos: 4, nivel: 'Excelente' };
+        if (r >= tabla[1]) return { puntos: 3, nivel: 'Bueno' };
+        if (r >= tabla[0]) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'flexiones',
+      nombre: 'Test de Flexiones',
+      area: 'Fuerza',
+      instruccion: 'Realizá la mayor cantidad de flexiones posibles sin pausa. Podés hacerlas en posición completa (pies) o modificada (rodillas). Contá las repeticiones hasta que no puedas más o la técnica falle.',
+      campos: [
+        { key: 'reps', label: 'Repeticiones completadas', tipo: 'number', placeholder: 'Ej: 12' },
+        { key: 'tipo', label: 'Tipo: escribí "pies" o "rodillas"', tipo: 'text', placeholder: 'pies / rodillas' }
+      ],
+      calcular: (v, edad, sexo) => {
+        let r = parseFloat(v.reps) || 0;
+        if ((v.tipo || '').toLowerCase().includes('rod')) r = Math.round(r * 0.7);
+        const ref = sexo === 'F' ? [8,14,20] : [15,22,30];
+        if (r >= ref[2]) return { puntos: 4, nivel: 'Excelente' };
+        if (r >= ref[1]) return { puntos: 3, nivel: 'Bueno' };
+        if (r >= ref[0]) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'sentadilla_uni',
+      nombre: 'Sentadilla Unipodal',
+      area: 'Fuerza',
+      instruccion: 'De pie sobre una pierna, con los brazos al frente. Realizá una sentadilla sobre esa pierna hasta que el muslo quede paralelo al suelo y volvé arriba. Contá cuántas podés hacer con buena técnica.',
+      campos: [{ key: 'reps', label: 'Repeticiones (mejor pierna)', tipo: 'number', placeholder: 'Ej: 8' }],
+      calcular: (v) => {
+        const r = parseFloat(v.reps) || 0;
+        if (r >= 15) return { puntos: 4, nivel: 'Excelente' };
+        if (r >= 8) return { puntos: 3, nivel: 'Bueno' };
+        if (r >= 3) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'turkish',
+      nombre: 'Turkish Get-Up',
+      area: 'Fuerza',
+      instruccion: 'Acostado boca arriba, levantate de pie usando solo uno de los lados del cuerpo (sin apoyar la otra mano). Volvé al suelo de manera controlada. Contá cuántas repeticiones podés hacer en 60 segundos.',
+      campos: [{ key: 'reps', label: 'Repeticiones en 60 segundos (un lado)', tipo: 'number', placeholder: 'Ej: 4' }],
+      calcular: (v) => {
+        const r = parseFloat(v.reps) || 0;
+        if (r >= 6) return { puntos: 4, nivel: 'Excelente' };
+        if (r >= 3) return { puntos: 3, nivel: 'Bueno' };
+        if (r >= 1) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'silla_5',
+      nombre: 'Levantarse de la Silla 5 reps',
+      area: 'Fuerza',
+      instruccion: 'Sentado en una silla estándar, levantate y sentate 5 veces lo más rápido posible. Cronometrá el tiempo desde que iniciás hasta que completás la 5ta repetición de pie.',
+      campos: [{ key: 'seg', label: 'Segundos para 5 repeticiones', tipo: 'number', placeholder: 'Ej: 11' }],
+      calcular: (v, edad) => {
+        const s = v.seg !== '' && !isNaN(parseFloat(v.seg)) ? parseFloat(v.seg) : 99;
+        if (s <= 10) return { puntos: 4, nivel: 'Excelente' };
+        if (s <= 13) return { puntos: 3, nivel: 'Bueno' };
+        if (s <= 16) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    }
+  ],
+  cardio: [
+    {
+      id: 'ruffier',
+      nombre: 'Test de Ruffier-Dickson',
+      area: 'Cardio',
+      instruccion: 'Medí tu FC en reposo (P1). Realizá 30 sentadillas en 45 segundos. Medí tu FC inmediatamente (P2) y a 1 minuto de recuperación (P3). Índice = (P1 + P2 + P3 - 200) / 10',
+      campos: [
+        { key: 'p1', label: 'FC reposo (P1) — latidos/min', tipo: 'number', placeholder: 'Ej: 68' },
+        { key: 'p2', label: 'FC post esfuerzo (P2) — latidos/min', tipo: 'number', placeholder: 'Ej: 110' },
+        { key: 'p3', label: 'FC 1 min recuperación (P3) — latidos/min', tipo: 'number', placeholder: 'Ej: 85' }
+      ],
+      calcular: (v) => {
+        const p1 = parseFloat(v.p1) || 0, p2 = parseFloat(v.p2) || 0, p3 = parseFloat(v.p3) || 0;
+        const idx = (p1 + p2 + p3 - 200) / 10;
+        if (idx < 0) return { puntos: 4, nivel: 'Excelente', detalle: `Índice: ${idx.toFixed(1)}` };
+        if (idx < 5) return { puntos: 3, nivel: 'Bueno', detalle: `Índice: ${idx.toFixed(1)}` };
+        if (idx < 10) return { puntos: 2, nivel: 'Regular', detalle: `Índice: ${idx.toFixed(1)}` };
+        return { puntos: 1, nivel: 'Bajo', detalle: `Índice: ${idx.toFixed(1)}` };
+      }
+    },
+    {
+      id: 'recuperacion_fc',
+      nombre: 'Recuperación de FC Post Esfuerzo',
+      area: 'Cardio',
+      instruccion: 'Realizá 2 minutos de trote en el lugar a ritmo moderado. Al terminar, medí tu FC (P1). Esperá exactamente 1 minuto sin moverte y medí tu FC nuevamente (P2). El indicador es la diferencia P1 - P2.',
+      campos: [
+        { key: 'p1', label: 'FC al terminar el esfuerzo (P1)', tipo: 'number', placeholder: 'Ej: 130' },
+        { key: 'p2', label: 'FC al minuto de recuperación (P2)', tipo: 'number', placeholder: 'Ej: 100' }
+      ],
+      calcular: (v) => {
+        const dif = (parseFloat(v.p1) || 0) - (parseFloat(v.p2) || 0);
+        if (dif >= 30) return { puntos: 4, nivel: 'Excelente' };
+        if (dif >= 20) return { puntos: 3, nivel: 'Bueno' };
+        if (dif >= 12) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'escalon_ymca',
+      nombre: 'Test de Escalón 3 Minutos',
+      area: 'Cardio',
+      instruccion: 'Usá un escalón de ~20cm. Subí y bajá durante 3 minutos al ritmo de 24 ciclos/min (metronomo a 96 bpm: sube-sube-baja-baja). Al terminar, sentate y medí tu FC durante 1 minuto completo.',
+      campos: [{ key: 'fc', label: 'FC en el minuto de recuperación (latidos/min)', tipo: 'number', placeholder: 'Ej: 92' }],
+      calcular: (v, edad, sexo) => {
+        const fc = parseFloat(v.fc) || 0;
+        const ref = sexo === 'F' ? [100, 120, 140] : [90, 110, 130];
+        if (fc < ref[0]) return { puntos: 4, nivel: 'Excelente' };
+        if (fc < ref[1]) return { puntos: 3, nivel: 'Bueno' };
+        if (fc < ref[2]) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'caminata_6min',
+      nombre: 'Caminata de 6 Minutos',
+      area: 'Cardio',
+      instruccion: 'Caminá lo más rápido posible (sin correr) durante 6 minutos en una superficie plana. Medí la distancia recorrida en metros.',
+      campos: [{ key: 'metros', label: 'Metros recorridos en 6 minutos', tipo: 'number', placeholder: 'Ej: 450' }],
+      calcular: (v, edad, sexo) => {
+        const m = parseFloat(v.metros) || 0;
+        const ref = sexo === 'F'
+          ? (edad < 60 ? [400,480,560] : [350,430,510])
+          : (edad < 60 ? [450,530,610] : [400,480,560]);
+        if (m >= ref[2]) return { puntos: 4, nivel: 'Excelente' };
+        if (m >= ref[1]) return { puntos: 3, nivel: 'Bueno' };
+        if (m >= ref[0]) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'escalon_chester',
+      nombre: 'Test de Escalón Chester',
+      area: 'Cardio',
+      instruccion: 'Subí y bajá un escalón de 30cm al ritmo indicado (comenzando a 15 ciclos/min, aumentando cada 2 min). El test termina cuando llegás al 80% de tu FC máx (220 - edad) o no podés mantener el ritmo. Anotá cuántos minutos completaste.',
+      campos: [{ key: 'minutos', label: 'Minutos completados antes de detenerte', tipo: 'number', placeholder: 'Ej: 6' }],
+      calcular: (v) => {
+        const m = parseFloat(v.minutos) || 0;
+        if (m >= 8) return { puntos: 4, nivel: 'Excelente' };
+        if (m >= 6) return { puntos: 3, nivel: 'Bueno' };
+        if (m >= 4) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    }
+  ],
+  movilidad: [
+    {
+      id: 'tug',
+      nombre: 'Levantarse y Caminar (TUG)',
+      area: 'Movilidad',
+      instruccion: 'Sentado en una silla, al escuchar la señal: levantate, caminá 3 metros, rodeá un cono o marca, volvé y sentate. Cronometrá desde "ya" hasta que te sentés completamente.',
+      campos: [{ key: 'seg', label: 'Segundos', tipo: 'number', placeholder: 'Ej: 9' }],
+      calcular: (v, edad) => {
+        const s = v.seg !== '' && !isNaN(parseFloat(v.seg)) ? parseFloat(v.seg) : 99;
+        if (s <= 8) return { puntos: 4, nivel: 'Excelente' };
+        if (s <= 10) return { puntos: 3, nivel: 'Bueno' };
+        if (s <= 13) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'flexion_silla',
+      nombre: 'Flexión Sentado en Silla',
+      area: 'Movilidad',
+      instruccion: 'Sentado al borde de una silla, estirá una pierna con el talón en el suelo y el pie flexionado. Con la espalda recta, inclinándote hacia adelante, intentá tocar o superar la punta del pie. Medí la distancia entre tus dedos y la punta del pie (negativo si no llegás, positivo si la superás).',
+      campos: [{ key: 'cm', label: 'Centímetros (negativos si no llegás)', tipo: 'number', placeholder: 'Ej: -5 o +3' }],
+      calcular: (v, edad, sexo) => {
+        const c = v.cm !== '' && !isNaN(parseFloat(v.cm)) ? parseFloat(v.cm) : -99;
+        const ref = sexo === 'F' ? [-2, 3, 8] : [-5, 0, 5];
+        if (c >= ref[2]) return { puntos: 4, nivel: 'Excelente' };
+        if (c >= ref[1]) return { puntos: 3, nivel: 'Bueno' };
+        if (c >= ref[0]) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'rascado_espalda',
+      nombre: 'Test de Rascado de Espalda',
+      area: 'Movilidad',
+      instruccion: 'De pie, pasá una mano por encima del hombro hacia la espalda y la otra por abajo. Intentá juntar los dedos medios de ambas manos. Medí la distancia entre los dedos medios (negativo si no se tocan, positivo si se superponen).',
+      campos: [{ key: 'cm', label: 'Centímetros (negativos si no se tocan)', tipo: 'number', placeholder: 'Ej: -8 o +2' }],
+      calcular: (v, edad, sexo) => {
+        const c = v.cm !== '' && !isNaN(parseFloat(v.cm)) ? parseFloat(v.cm) : -99;
+        const ref = sexo === 'F' ? [-5, 0, 4] : [-8, -3, 2];
+        if (c >= ref[2]) return { puntos: 4, nivel: 'Excelente' };
+        if (c >= ref[1]) return { puntos: 3, nivel: 'Bueno' };
+        if (c >= ref[0]) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'rotacion_tronco',
+      nombre: 'Rotación de Tronco',
+      area: 'Movilidad',
+      instruccion: 'Sentado en una silla con la espalda recta y los brazos cruzados en el pecho, rotá el tronco lo máximo posible hacia un lado sin mover las caderas. Estimá los grados de rotación o medí con un goniómetro/app.',
+      campos: [{ key: 'grados', label: 'Grados de rotación (mejor lado)', tipo: 'number', placeholder: 'Ej: 40' }],
+      calcular: (v) => {
+        const g = parseFloat(v.grados) || 0;
+        if (g >= 50) return { puntos: 4, nivel: 'Excelente' };
+        if (g >= 40) return { puntos: 3, nivel: 'Bueno' };
+        if (g >= 30) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    },
+    {
+      id: 'movilidad_tobillo',
+      nombre: 'Movilidad de Tobillo',
+      area: 'Movilidad',
+      instruccion: 'De pie frente a una pared, colocá el pie a ~10cm. Intentá tocar la rodilla a la pared sin levantar el talón. Mové el pie más lejos hasta que no llegues. Medí la distancia del dedo gordo a la pared al último intento exitoso.',
+      campos: [{ key: 'cm', label: 'Centímetros desde la pared', tipo: 'number', placeholder: 'Ej: 12' }],
+      calcular: (v) => {
+        const c = parseFloat(v.cm) || 0;
+        if (c >= 12) return { puntos: 4, nivel: 'Excelente' };
+        if (c >= 8) return { puntos: 3, nivel: 'Bueno' };
+        if (c >= 5) return { puntos: 2, nivel: 'Regular' };
+        return { puntos: 1, nivel: 'Bajo' };
+      }
+    }
+  ]
+};
+
+// ===================== ESTADO =====================
+let estado = {
+  nombre: '', email: '', edad: 0, sexo: '',
+  areaFoco: '',
+  testsSeleccionados: [],
+  testsExtra: [],
+  indexActual: 0,
+  indexExtra: 0,
+  resultados: {},
+  resultadosExtra: {},
+  evalAnterior: null,
+  esRetorno: false
+};
+
+// ===================== PANTALLAS =====================
+function mostrarPantalla(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ===================== REGISTRO =====================
+function irARegistro() { mostrarPantalla('s1'); }
+
+function selSexo(s, el) {
+  document.querySelectorAll('#s1 .btn-opcion').forEach(b => b.classList.remove('seleccionado'));
+  el.classList.add('seleccionado');
+  estado.sexo = s;
+}
+
+async function siguienteDesdeRegistro() {
+  const nombre = document.getElementById('inNombre').value.trim();
+  const email = document.getElementById('inEmail').value.trim();
+  const edad = parseInt(document.getElementById('inEdad').value);
+
+  if (!nombre || !email || !edad || !estado.sexo) {
+    alert('Completá todos los campos');
+    return;
+  }
+  if (!email.includes('@')) {
+    document.getElementById('errorEmail').style.display = 'block';
+    return;
+  }
+  document.getElementById('errorEmail').style.display = 'none';
+
+  estado.nombre = nombre;
+  estado.email = email;
+  estado.edad = edad;
+  document.getElementById('inEmailFinal').value = email;
+
+  // Buscar eval anterior en Supabase
+  try {
+    const { data } = await sb.from(TABLA).select('*').eq('email', email).order('created_at', { ascending: false }).limit(1);
+    if (data && data.length > 0) {
+      estado.esRetorno = true;
+      estado.evalAnterior = data[0];
+      mostrarBienvenidaRetorno();
+    }
+  } catch(e) {}
+
+  mostrarPantalla('s2');
+}
+
+function mostrarBienvenidaRetorno() {
+  const el = document.getElementById('bienvenidaRetornoEl');
+  el.style.display = 'flex';
+  document.getElementById('avatarLetra').textContent = estado.nombre.charAt(0).toUpperCase();
+  document.getElementById('bienvenidaNombre').textContent = `¡Hola de nuevo, ${estado.nombre.split(' ')[0]}!`;
+}
+
+// ===================== ÁREA FOCO =====================
+function selArea(area, el) {
+  document.querySelectorAll('#s2 .btn-opcion').forEach(b => b.classList.remove('seleccionado'));
+  el.classList.add('seleccionado');
+  estado.areaFoco = area;
+}
+
+function iniciarTests() {
+  if (!estado.areaFoco) { alert('Elegí un área'); return; }
+  // 3 tests del área elegida + 1 de cada otra área
+  const areas = ['equilibrio', 'fuerza', 'cardio', 'movilidad'];
+  const otras = areas.filter(a => a !== estado.areaFoco);
+  const sel = [];
+  // 2 del área foco
+  sel.push(TESTS[estado.areaFoco][0]);
+  sel.push(TESTS[estado.areaFoco][1]);
+  // 1 de cada otra área
+  otras.forEach(a => sel.push(TESTS[a][0]));
+  // El 5to es el 3ro del área foco si existe
+  if (TESTS[estado.areaFoco][2]) sel.push(TESTS[estado.areaFoco][2]);
+
+  estado.testsSeleccionados = sel.slice(0, 5);
+  estado.indexActual = 0;
+  estado.resultados = {};
+  mostrarProgreso();
+  mostrarTestActual();
+  mostrarPantalla('s3');
+}
+
+// ===================== PROGRESO HEADER =====================
+function mostrarProgreso() {
+  document.getElementById('progHeaderEl').classList.add('visible');
+}
+function ocultarProgreso() {
+  document.getElementById('progHeaderEl').classList.remove('visible');
+}
+function actualizarProgreso(actual, total) {
+  document.getElementById('progTexto').textContent = `Test ${actual} de ${total}`;
+  document.getElementById('barraFill').style.width = `${(actual/total)*100}%`;
+}
+
+// ===================== TEST ACTUAL =====================
+function mostrarTestActual() {
+  const test = estado.testsSeleccionados[estado.indexActual];
+  const total = estado.testsSeleccionados.length;
+  const num = estado.indexActual + 1;
+
+  actualizarProgreso(num, total);
+  document.getElementById('tNumero').textContent = String(num).padStart(2,'0');
+  document.getElementById('tNombre').textContent = test.nombre;
+  document.getElementById('tArea').textContent = test.area.toUpperCase();
+  document.getElementById('tInstruccion').textContent = test.instruccion;
+  renderInputs(test, 'tInputArea');
+}
+
+function renderInputs(test, containerId) {
+  const cont = document.getElementById(containerId);
+  cont.innerHTML = '';
+  test.campos.forEach(campo => {
+    const div = document.createElement('div');
+    div.className = 'input-resultado';
+    div.innerHTML = `<label>${campo.label}</label>
+      <input type="${campo.tipo}" id="campo_${campo.key}" placeholder="${campo.placeholder}" 
+        style="width:100%;background:var(--gris-oscuro);border:1px solid var(--gris-borde);border-radius:8px;padding:14px 16px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--blanco);outline:none;" />`;
+    cont.appendChild(div);
+  });
+}
+
+function siguienteTest() {
+  const test = estado.testsSeleccionados[estado.indexActual];
+  const valores = {};
+  let valido = true;
+  test.campos.forEach(c => {
+    const el = document.getElementById(`campo_${c.key}`);
+    if (!el || el.value === '') { valido = false; return; }
+    valores[c.key] = el.value;
+  });
+  if (!valido) { alert('Completá el resultado del test'); return; }
+
+  const res = test.calcular(valores, estado.edad, estado.sexo);
+  estado.resultados[test.id] = { ...res, valores, nombre: test.nombre, area: test.area };
+
+  estado.indexActual++;
+  if (estado.indexActual < estado.testsSeleccionados.length) {
+    mostrarTestActual();
+  } else {
+    ocultarProgreso();
+    mostrarResultadoParcial();
+    mostrarPantalla('s4');
+  }
+}
+
+function saltarTest() {
+  const test = estado.testsSeleccionados[estado.indexActual];
+  estado.resultados[test.id] = { puntos: 0, nivel: 'Omitido', valores: {}, nombre: test.nombre, area: test.area };
+  estado.indexActual++;
+  if (estado.indexActual < estado.testsSeleccionados.length) {
+    mostrarTestActual();
+  } else {
+    ocultarProgreso();
+    mostrarResultadoParcial();
+    mostrarPantalla('s4');
+  }
+}
+
+// ===================== SCORING =====================
+function calcularEdadFuncional(resultados, edadCron) {
+  const puntos = Object.values(resultados).map(r => r.puntos || 0);
+  const total = puntos.reduce((a,b) => a+b, 0);
+  const max = puntos.length * 4;
+  const pct = max > 0 ? total / max : 0.5;
+  // Escala: 0% → cronológica+20, 100% → cronológica-15
+  const resultado = Math.round(edadCron + (20 - pct * 35));
+  return Math.max(18, resultado); // mínimo biológico 18
+}
+
+function calcularScoresPorArea(resultados) {
+  const areas = { equilibrio: [], fuerza: [], cardio: [], movilidad: [] };
+  Object.values(resultados).forEach(r => {
+    const a = r.area ? r.area.toLowerCase() : '';
+    if (areas[a]) areas[a].push(r.puntos || 0);
+  });
+  const scores = {};
+  Object.keys(areas).forEach(a => {
+    const pts = areas[a];
+    if (pts.length === 0) { scores[a] = null; return; }
+    const avg = pts.reduce((x,y)=>x+y,0) / pts.length;
+    scores[a] = Math.round(avg * 25); // 0-100
+  });
+  return scores;
+}
+
+function nivelScore(s) {
+  if (s === null) return { clase: 'score-regular', fill: 'fill-regular', etiqueta: 'Sin datos' };
+  if (s >= 75) return { clase: 'score-excelente', fill: 'fill-excelente', etiqueta: 'Excelente' };
+  if (s >= 50) return { clase: 'score-bueno', fill: 'fill-bueno', etiqueta: 'Bueno' };
+  if (s >= 25) return { clase: 'score-regular', fill: 'fill-regular', etiqueta: 'Regular' };
+  return { clase: 'score-bajo', fill: 'fill-bajo', etiqueta: 'Bajo' };
+}
+
+function areaMasDebil(scores) {
+  let min = 101, area = 'movilidad';
+  Object.keys(scores).forEach(a => {
+    if (scores[a] !== null && scores[a] < min) { min = scores[a]; area = a; }
+  });
+  return area;
+}
+
+function areaMasFuerte(scores) {
+  let max = -1, area = 'fuerza';
+  Object.keys(scores).forEach(a => {
+    if (scores[a] !== null && scores[a] > max) { max = scores[a]; area = a; }
+  });
+  return area;
+}
+
+const NOMBRES_AREA = { equilibrio: 'Equilibrio', fuerza: 'Fuerza', cardio: 'Cardio', movilidad: 'Movilidad' };
+
+// ===================== RESULTADO PARCIAL =====================
+function mostrarResultadoParcial() {
+  const ef = calcularEdadFuncional(estado.resultados, estado.edad);
+  const scores = calcularScoresPorArea(estado.resultados);
+  const dif = estado.edad - ef;
+
+  document.getElementById('edadFuncParcial').textContent = ef;
+  document.getElementById('compParcial').textContent =
+    dif > 0 ? `${dif} años más joven que tu edad cronológica (${estado.edad})` :
+    dif < 0 ? `${Math.abs(dif)} años mayor que tu edad cronológica (${estado.edad})` :
+    `Igual a tu edad cronológica (${estado.edad})`;
+
+  // Progresión vs anterior
+  if (estado.evalAnterior) {
+    const efAnterior = estado.evalAnterior.edad_funcional;
+    const mejora = efAnterior - ef;
+    if (mejora !== 0) {
+      document.getElementById('progresionBadgeEl').style.display = 'block';
+      document.getElementById('progresionBadge').textContent =
+        mejora > 0 ? `↑ Mejoraste ${mejora} años desde tu última evaluación` : `↓ ${Math.abs(mejora)} años respecto a tu última evaluación`;
+    }
+  }
+
+  // Areas grid
+  renderAreasGrid(scores, 'areasGridParcial');
+
+  // Mensaje personalizado
+  const fuerte = areaMasFuerte(scores);
+  const debil = areaMasDebil(scores);
+  const msgs = {
+    equilibrio: 'Tu equilibrio puede mejorar con práctica diaria de 5 minutos de apoyo unipodal.',
+    fuerza: 'Trabajar la fuerza funcional es la inversión más rentable en longevidad. Dos sesiones semanales hacen la diferencia.',
+    cardio: 'Tu sistema cardiovascular responde rápido al entrenamiento. Con consistencia, verás mejoras en semanas.',
+    movilidad: 'La movilidad se recupera a cualquier edad. Movimiento diario y fluido es todo lo que necesitás.'
+  };
+  document.getElementById('mensajeParcial').innerHTML =
+    `<strong>Tu punto fuerte es ${NOMBRES_AREA[fuerte].toLowerCase()}.</strong> El área con más potencial de mejora es ${NOMBRES_AREA[debil].toLowerCase()}. ${msgs[debil]}`;
+}
+
+function renderAreasGrid(scores, containerId) {
+  const cont = document.getElementById(containerId);
+  const noms = { equilibrio: '⚖️ Equilibrio', fuerza: '💪 Fuerza', cardio: '❤️ Cardio', movilidad: '🤸 Movilidad' };
+  cont.innerHTML = Object.keys(noms).map(a => {
+    const s = scores[a];
+    const n = nivelScore(s);
+    return `<div class="area-card">
+      <div class="area-nombre">${noms[a]}</div>
+      <div class="area-score ${n.clase}">${s !== null ? s : '--'}</div>
+      <div style="font-size:11px;color:var(--gris-texto);margin-bottom:6px;">${n.etiqueta}</div>
+      <div class="area-barra"><div class="area-barra-fill ${n.fill}" style="width:${s !== null ? s : 0}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ===================== TESTS EXTRA =====================
+function iniciarTestsExtra() {
+  const todosLosResultados = { ...estado.resultados };
+  const debil = areaMasDebil(calcularScoresPorArea(todosLosResultados));
+  const usados = estado.testsSeleccionados.map(t => t.id);
+  const extras = TESTS[debil].filter(t => !usados.includes(t.id)).slice(0, 3);
+  estado.testsExtra = extras;
+  estado.indexExtra = 0;
+  estado.resultadosExtra = {};
+  mostrarProgreso();
+  mostrarTestExtra();
+  mostrarPantalla('s5');
+}
+
+function mostrarSelectorArea() {
+  // Toggle selector visible, ocultar botón elegir
+  const selector = document.getElementById('selectorAreaExtra');
+  const btnElegir = document.getElementById('btnElegirArea');
+  const btnAuto = document.getElementById('btnExtraAuto');
+  selector.style.display = 'block';
+  btnElegir.style.display = 'none';
+  btnAuto.style.display = 'none';
+}
+
+function iniciarTestsExtraArea(area, el) {
+  // Highlight selected
+  document.querySelectorAll('#selectorAreaExtra .btn-opcion').forEach(b => b.classList.remove('seleccionado'));
+  el.classList.add('seleccionado');
+  // Start extras for chosen area
+  const usados = estado.testsSeleccionados.map(t => t.id);
+  const extras = TESTS[area].filter(t => !usados.includes(t.id)).slice(0, 3);
+  estado.testsExtra = extras;
+  estado.indexExtra = 0;
+  estado.resultadosExtra = {};
+  mostrarProgreso();
+  setTimeout(() => { mostrarTestExtra(); mostrarPantalla('s5'); }, 200);
+}
+
+function mostrarTestExtra() {
+  const test = estado.testsExtra[estado.indexExtra];
+  const total = estado.testsExtra.length;
+  const num = estado.indexExtra + 1;
+  actualizarProgreso(num, total);
+  document.getElementById('tNumeroEx').textContent = String(num).padStart(2,'0');
+  document.getElementById('tNombreEx').textContent = test.nombre;
+  document.getElementById('tAreaEx').textContent = test.area.toUpperCase();
+  document.getElementById('tInstruccionEx').textContent = test.instruccion;
+  renderInputs(test, 'tInputAreaEx');
+}
+
+function siguienteTestExtra() {
+  const test = estado.testsExtra[estado.indexExtra];
+  const valores = {};
+  let valido = true;
+  test.campos.forEach(c => {
+    const el = document.getElementById(`campo_${c.key}`);
+    if (!el || el.value === '') { valido = false; return; }
+    valores[c.key] = el.value;
+  });
+  if (!valido) { alert('Completá el resultado del test'); return; }
+  const res = test.calcular(valores, estado.edad, estado.sexo);
+  estado.resultadosExtra[test.id] = { ...res, valores, nombre: test.nombre, area: test.area };
+  estado.indexExtra++;
+  if (estado.indexExtra < estado.testsExtra.length) {
+    mostrarTestExtra();
+  } else {
+    ocultarProgreso();
+    irAResultadoFinal(true);
+  }
+}
+
+function saltarTestExtra() {
+  const test = estado.testsExtra[estado.indexExtra];
+  estado.resultadosExtra[test.id] = { puntos: 0, nivel: 'Omitido', valores: {}, nombre: test.nombre, area: test.area };
+  estado.indexExtra++;
+  if (estado.indexExtra < estado.testsExtra.length) {
+    mostrarTestExtra();
+  } else {
+    ocultarProgreso();
+    irAResultadoFinal(true);
+  }
+}
+
+// ===================== RESULTADO FINAL =====================
+function irAResultadoFinal(conExtra) {
+  ocultarProgreso();
+  const todosRes = conExtra
+    ? { ...estado.resultados, ...estado.resultadosExtra }
+    : { ...estado.resultados };
+
+  const ef = calcularEdadFuncional(todosRes, estado.edad);
+  const scores = calcularScoresPorArea(todosRes);
+  const dif = estado.edad - ef;
+
+  document.getElementById('edadFuncFinal').textContent = ef;
+  document.getElementById('compFinal').textContent =
+    dif > 0 ? `${dif} años más joven que tu edad cronológica (${estado.edad})` :
+    dif < 0 ? `${Math.abs(dif)} años mayor que tu edad cronológica (${estado.edad})` :
+    `Igual a tu edad cronológica (${estado.edad})`;
+
+  // Progresión
+  if (estado.evalAnterior) {
+    const efAnterior = estado.evalAnterior.edad_funcional;
+    const mejora = efAnterior - ef;
+    if (mejora !== 0) {
+      document.getElementById('progresionBadgeFinalEl').style.display = 'block';
+      document.getElementById('progresionBadgeFinal').textContent =
+        mejora > 0 ? `↑ Mejoraste ${mejora} años desde tu última evaluación` : `↓ ${Math.abs(mejora)} años respecto a la evaluación anterior`;
+    }
+  }
+
+  // Radar
+  dibujarRadar(scores);
+  renderAreasGrid(scores, 'areasGridFinal');
+
+  // Mensaje
+  const fuerte = areaMasFuerte(scores);
+  const debil = areaMasDebil(scores);
+  const recom = {
+    equilibrio: 'Incorporá ejercicios de equilibrio unipodal y yoga de pie. 10 minutos al día transforman la estabilidad en meses.',
+    fuerza: 'Priorizá sentadillas, estocadas y trabajo de cadera 3 veces por semana. La fuerza funcional es la base de todo.',
+    cardio: 'Sesiones de 20-30 min de caminata rápida o bicicleta 4 veces por semana mejorarán significativamente tu capacidad aeróbica.',
+    movilidad: 'Estiramiento dinámico matutino y trabajo de movilidad articular diario. Menos de 15 minutos con resultados visibles en 4 semanas.'
+  };
+  document.getElementById('mensajeFinal').innerHTML =
+    `<strong>Tu fortaleza es ${NOMBRES_AREA[fuerte].toLowerCase()}.</strong><br><br>Área prioritaria: <strong>${NOMBRES_AREA[debil]}</strong><br>${recom[debil]}`;
+
+  // Guardar en Supabase
+  guardarResultado(ef, scores, todosRes);
+
+  // Confetti si mejoró
+  if (estado.evalAnterior && (estado.evalAnterior.edad_funcional - ef) > 0) {
+    lanzarConfetti();
+  } else if (!estado.evalAnterior) {
+    lanzarConfetti();
+  }
+
+  mostrarPantalla('s6');
+}
+
+// ===================== RADAR =====================
+function dibujarRadar(scores) {
+  const canvas = document.getElementById('radarCanvas');
+  const ctx = canvas.getContext('2d');
+  const cx = 130, cy = 130, r = 100;
+  const areas = ['equilibrio', 'fuerza', 'cardio', 'movilidad'];
+  const angulos = areas.map((_, i) => (i * Math.PI * 2 / areas.length) - Math.PI/2);
+
+  ctx.clearRect(0, 0, 260, 260);
+
+  // Grid
+  [25,50,75,100].forEach(v => {
+    ctx.beginPath();
+    angulos.forEach((a, i) => {
+      const x = cx + Math.cos(a) * (r * v/100);
+      const y = cy + Math.sin(a) * (r * v/100);
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.closePath();
+    ctx.strokeStyle = v === 100 ? '#333' : '#222';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  });
+
+  // Ejes
+  angulos.forEach(a => {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r);
+    ctx.strokeStyle = '#2a2a2a';
+    ctx.stroke();
+  });
+
+  // Datos anteriores (si hay)
+  if (estado.evalAnterior && estado.evalAnterior.scores) {
+    ctx.beginPath();
+    angulos.forEach((a, i) => {
+      const sc = (estado.evalAnterior.scores[areas[i]] || 0) / 100;
+      const x = cx + Math.cos(a) * r * sc;
+      const y = cy + Math.sin(a) * r * sc;
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Datos actuales — solo dibuja áreas con datos reales
+  const puntosValidos = angulos.map((a, i) => {
+    const s = scores[areas[i]];
+    if (s === null || s === undefined) return null;
+    const sc = s / 100;
+    return { x: cx + Math.cos(a) * r * sc, y: cy + Math.sin(a) * r * sc, tiene: true };
+  });
+
+  // Polígono solo con puntos válidos
+  const validos = puntosValidos.filter(p => p !== null);
+  if (validos.length >= 2) {
+    ctx.beginPath();
+    let primero = true;
+    puntosValidos.forEach(p => {
+      if (!p) return;
+      primero ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+      primero = false;
+    });
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(200,240,0,0.15)';
+    ctx.fill();
+    ctx.strokeStyle = '#c8f000';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // Puntos — verde si tiene dato, gris punteado si no
+  angulos.forEach((a, i) => {
+    const s = scores[areas[i]];
+    if (s !== null && s !== undefined) {
+      const sc = s / 100;
+      const x = cx + Math.cos(a) * r * sc;
+      const y = cy + Math.sin(a) * r * sc;
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI*2);
+      ctx.fillStyle = '#c8f000';
+      ctx.fill();
+    } else {
+      // Marca "sin datos" en el borde del eje
+      const x = cx + Math.cos(a) * r * 0.15;
+      const y = cy + Math.sin(a) * r * 0.15;
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI*2);
+      ctx.fillStyle = '#444';
+      ctx.fill();
+    }
+  });
+
+  // Labels
+  ctx.font = '11px DM Mono';
+  ctx.fillStyle = '#888';
+  ctx.textAlign = 'center';
+  const labels = ['Equilibrio','Fuerza','Cardio','Movilidad'];
+  angulos.forEach((a, i) => {
+    const x = cx + Math.cos(a) * (r + 18);
+    const y = cy + Math.sin(a) * (r + 18);
+    ctx.fillText(labels[i], x, y + 4);
+  });
+}
+
+// ===================== GUARDAR SUPABASE =====================
+async function guardarResultado(edadFuncional, scores, resultados) {
+  try {
+    await sb.from(TABLA).insert({
+      nombre: estado.nombre,
+      email: estado.email,
+      edad_cronologica: estado.edad,
+      sexo: estado.sexo,
+      area_foco: estado.areaFoco,
+      edad_funcional: edadFuncional,
+      scores: scores,
+      resultados: resultados,
+      created_at: new Date().toISOString()
+    });
+  } catch(e) { console.log('Supabase error:', e); }
+}
+
+// ===================== WHATSAPP =====================
+function enviarWA() {
+  const todos = { ...estado.resultados, ...estado.resultadosExtra };
+  const ef = calcularEdadFuncional(todos, estado.edad);
+  const scores = calcularScoresPorArea(todos);
+  const debil = areaMasDebil(scores);
+  const fuerte = areaMasFuerte(scores);
+
+  const msg = encodeURIComponent(
+`🔬 *Test de Edad Funcional — MCR*
+
+👤 *${estado.nombre}*
+📅 Edad cronológica: ${estado.edad} años
+⚧ Sexo: ${estado.sexo === 'M' ? 'Masculino' : 'Femenino'}
+🎯 Foco: ${NOMBRES_AREA[estado.areaFoco]}
+
+🧬 *Edad Funcional: ${ef} años*
+
+📊 *Scores por área:*
+⚖️ Equilibrio: ${scores.equilibrio !== null ? scores.equilibrio : '--'}/100
+💪 Fuerza: ${scores.fuerza !== null ? scores.fuerza : '--'}/100
+❤️ Cardio: ${scores.cardio !== null ? scores.cardio : '--'}/100
+🤸 Movilidad: ${scores.movilidad !== null ? scores.movilidad : '--'}/100
+
+✅ Fortaleza: ${NOMBRES_AREA[fuerte]}
+⚠️ A trabajar: ${NOMBRES_AREA[debil]}
+
+_Test de Edad Funcional — @mcr.biohacking_`
+  );
+  window.open(`https://wa.me/${WA_NUM}?text=${msg}`, '_blank');
+}
+
+// ===================== EMAIL =====================
+function enviarEmail() {
+  const email = document.getElementById('inEmailFinal').value.trim();
+  if (!email || !email.includes('@')) { alert('Ingresá un email válido'); return; }
+
+  const todos = { ...estado.resultados, ...estado.resultadosExtra };
+  const ef = calcularEdadFuncional(todos, estado.edad);
+  const scores = calcularScoresPorArea(todos);
+
+  // EmailJS — activar cuando tengas las claves
+  if (EMAILJS_KEY !== 'TU_PUBLIC_KEY') {
+    emailjs.init(EMAILJS_KEY);
+    emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+      to_email: email,
+      nombre: estado.nombre,
+      edad_cronologica: estado.edad,
+      edad_funcional: ef,
+      equilibrio: scores.equilibrio,
+      fuerza: scores.fuerza,
+      cardio: scores.cardio,
+      movilidad: scores.movilidad
+    }).then(() => alert('¡Informe enviado a tu email!'))
+      .catch(() => alert('No se pudo enviar el email. Verificá la configuración.'));
+  } else {
+    alert('Email pendiente de configurar con EmailJS. Por ahora usá el botón de WhatsApp.');
+  }
+}
+
+// ===================== CONFETTI =====================
+function lanzarConfetti() {
+  const cont = document.getElementById('confettiEl');
+  const colores = ['#c8f000','#ffffff','#00e57a','#ff8c00'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colores[Math.floor(Math.random()*colores.length)];
+    el.style.animationDelay = Math.random() * 1 + 's';
+    el.style.animationDuration = (1.5 + Math.random()) + 's';
+    cont.appendChild(el);
+  }
+  setTimeout(() => cont.innerHTML = '', 4000);
+}
+
+// ===================== DASHBOARD =====================
+function abrirLogin() {
+  document.getElementById('modalLogin').classList.add('active');
+  setTimeout(() => document.getElementById('inputPass').focus(), 100);
+}
+function cerrarModal() { document.getElementById('modalLogin').classList.remove('active'); }
+
+function verificarPass() {
+  const p = document.getElementById('inputPass').value;
+  if (p === PASS_DASH) {
+    cerrarModal();
+    document.getElementById('inputPass').value = '';
+    mostrarPantalla('s7');
+    cargarDashboard();
+  } else {
+    document.getElementById('errorPass').style.display = 'block';
+  }
+}
+document.getElementById('inputPass').addEventListener('keydown', e => { if (e.key === 'Enter') verificarPass(); });
+
+async function cargarDashboard() {
+  document.getElementById('dashLoader').style.display = 'flex';
+  document.getElementById('dashLista').innerHTML = '';
+  try {
+    const { data } = await sb.from(TABLA).select('*').order('created_at', { ascending: false });
+    document.getElementById('dashLoader').style.display = 'none';
+    if (!data || data.length === 0) {
+      document.getElementById('dashLista').innerHTML = '<div style="color:var(--gris-texto);font-size:14px;">Sin evaluaciones aún.</div>';
+      document.getElementById('dashCount').textContent = '78 evaluaciones';
+      return;
+    }
+    // Agrupar por email (mostrar el más reciente de cada alumno)
+    const porEmail = {};
+    data.forEach(d => { if (!porEmail[d.email]) porEmail[d.email] = []; porEmail[d.email].push(d); });
+    const alumnos = Object.values(porEmail);
+    document.getElementById('dashCount').textContent = `${alumnos.length} alumnos · ${78 + data.length} evaluaciones`;
+    document.getElementById('dashLista').innerHTML = alumnos.map((evals, i) => {
+      const ultimo = evals[0];
+      const fecha = new Date(ultimo.created_at).toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' });
+      const nEvals = evals.length;
+      return `<div class="alumno-row" onclick="verAlumno(${i})">
+        <div class="alumno-nombre">${ultimo.nombre}</div>
+        <div class="alumno-meta">
+          <span>${ultimo.email}</span>
+          <span>${ultimo.edad_cronologica} años</span>
+          <span>EF: <strong style="color:var(--acento)">${ultimo.edad_funcional}</strong></span>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+          <span class="tag">${nEvals} EVAL${nEvals > 1 ? 'S' : ''}</span>
+          <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gris-texto);">${fecha}</span>
+        </div>
+      </div>`;
+    }).join('');
+    window._dashAlumnos = alumnos;
+  } catch(e) {
+    document.getElementById('dashLoader').style.display = 'none';
+    document.getElementById('dashLista').innerHTML = '<div style="color:var(--rojo);font-size:14px;">Error al cargar datos.</div>';
+  }
+}
+
+function verAlumno(idx) {
+  const evals = window._dashAlumnos[idx];
+  const alumno = evals[0];
+  const det = document.getElementById('alumnoDetalle');
+  const scores = alumno.scores || {};
+  det.innerHTML = `
+    <div style="margin-bottom:16px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;">${alumno.nombre}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gris-texto);">${alumno.email} · ${alumno.edad_cronologica} años · ${alumno.sexo === 'M' ? 'Masculino' : 'Femenino'}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+      ${['equilibrio','fuerza','cardio','movilidad'].map(a => {
+        const s = scores[a];
+        const n = nivelScore(s);
+        return `<div class="area-card">
+          <div class="area-nombre">${NOMBRES_AREA[a]}</div>
+          <div class="area-score ${n.clase}">${s !== null && s !== undefined ? s : '--'}</div>
+          <div style="font-size:11px;color:var(--gris-texto);">${n.etiqueta}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="label" style="margin-bottom:8px;">Historial de evaluaciones</div>
+    ${evals.map((ev, i) => {
+      const fecha = new Date(ev.created_at).toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' });
+      const anterior = evals[i+1];
+      const delta = anterior ? anterior.edad_funcional - ev.edad_funcional : null;
+      return `<div class="eval-card">
+        <div class="eval-card-header">
+          <div>
+            <div class="eval-card-fecha">${fecha}</div>
+            <div style="font-size:12px;color:var(--gris-texto);">Foco: ${NOMBRES_AREA[ev.area_foco] || '--'}</div>
+          </div>
+          <div>
+            <div class="eval-card-edad">${ev.edad_funcional} años</div>
+            ${delta !== null ? `<div style="font-size:12px;text-align:right;color:${delta > 0 ? 'var(--verde)' : delta < 0 ? 'var(--rojo)' : 'var(--gris-texto)'};">${delta > 0 ? '↑ +'+delta : delta < 0 ? '↓ '+delta : '='}</div>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  `;
+  document.getElementById('modalAlumno').classList.add('active');
+}
+function cerrarModalAlumno() { document.getElementById('modalAlumno').classList.remove('active'); }
+
+// ===================== NAV =====================
+function irAInicio() {
+  ocultarProgreso();
+  estado = { nombre:'', email:'', edad:0, sexo:'', areaFoco:'', testsSeleccionados:[], testsExtra:[], indexActual:0, indexExtra:0, resultados:{}, resultadosExtra:{}, evalAnterior:null, esRetorno:false };
+  document.querySelectorAll('.btn-opcion').forEach(b => b.classList.remove('seleccionado'));
+  document.getElementById('bienvenidaRetornoEl').style.display = 'none';
+  mostrarPantalla('s0');
+}
+
+// ===================== FILTRO DASHBOARD =====================
+function filtrarAlumnos(query) {
+  if (!window._dashAlumnos) return;
+  const q = query.toLowerCase().trim();
+  const lista = document.getElementById('dashLista');
+  const rows = lista.querySelectorAll('.alumno-row');
+  let visible = 0;
+  rows.forEach(row => {
+    const texto = row.textContent.toLowerCase();
+    const show = !q || texto.includes(q);
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  // Show empty state if nothing matches
+  let emptyEl = lista.querySelector('.dash-empty');
+  if (!emptyEl) {
+    emptyEl = document.createElement('div');
+    emptyEl.className = 'dash-empty';
+    emptyEl.style.cssText = 'color:var(--gris-texto);font-size:14px;padding:20px 0;display:none;';
+    lista.appendChild(emptyEl);
+  }
+  emptyEl.textContent = 'No se encontraron resultados para "' + query + '"';
+  emptyEl.style.display = (visible === 0 && q) ? 'block' : 'none';
+}
+
+// ===================== EXPORT CSV =====================
+function exportarCSV() {
+  if (!window._dashAlumnos) { alert('Cargá el dashboard primero'); return; }
+  const headers = ['Nombre','Email','Edad','Sexo','Área Foco','Edad Funcional','Equilibrio','Fuerza','Cardio','Movilidad','Fecha'];
+  const rows = window._dashAlumnos.flatMap(evals =>
+    evals.map(ev => [
+      ev.nombre, ev.email, ev.edad_cronologica, ev.sexo === 'M' ? 'Masculino' : 'Femenino',
+      NOMBRES_AREA[ev.area_foco] || ev.area_foco,
+      ev.edad_funcional,
+      ev.scores?.equilibrio ?? '', ev.scores?.fuerza ?? '', ev.scores?.cardio ?? '', ev.scores?.movilidad ?? '',
+      new Date(ev.created_at).toLocaleDateString('es-AR')
+    ])
+  );
+  const csv = [headers, ...rows].map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'mcr_msrt_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ===================== VALIDACIONES UI =====================
+function validarEmailBlur(input) {
+  const val = input.value.trim();
+  const errEl = document.getElementById('errorEmail');
+  if (val && !val.includes('@')) {
+    errEl.style.display = 'block';
+    input.style.borderColor = 'var(--rojo)';
+  } else {
+    errEl.style.display = 'none';
+    input.style.borderColor = val ? 'var(--verde)' : 'var(--gris-borde)';
+  }
+}
+
+// ===================== SUPABASE TABLA INIT =====================
+// La tabla msrt_v3 necesita estas columnas en Supabase:
+// id (uuid, primary key, default gen_random_uuid())
+// nombre (text)
+// email (text)
+// edad_cronologica (int4)
+// sexo (text)
+// area_foco (text)
+// edad_funcional (int4)
+// scores (jsonb)
+// resultados (jsonb)
+// created_at (timestamptz, default now())
+</script>
+</body>
+</html>
