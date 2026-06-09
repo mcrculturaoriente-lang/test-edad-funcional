@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -502,6 +502,82 @@
   /* SEPARADOR */
   .sep { height: 1px; background: var(--gris-borde); margin: 20px 0; }
 
+  /* PREGUNTAS NIVEL */
+  .pregunta-nivel {
+    margin-bottom: 28px;
+  }
+  .pregunta-nivel .pregunta-texto {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--blanco);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .opciones-nivel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .opcion-nivel {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 8px;
+    padding: 13px 16px;
+    color: var(--blanco-suave);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .opcion-nivel:hover { border-color: var(--acento); background: rgba(200,240,0,0.04); }
+  .opcion-nivel.sel { border-color: var(--acento); background: rgba(200,240,0,0.10); color: var(--blanco); }
+
+  /* TIMER NIVEL */
+  .timer-nivel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .timer-circulo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(200,240,0,0.1);
+    border: 2px solid var(--acento);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--acento);
+    flex-shrink: 0;
+    transition: color 0.3s, border-color 0.3s;
+  }
+  .timer-circulo.urgente { color: var(--naranja); border-color: var(--naranja); }
+  .timer-texto {
+    font-size: 13px;
+    color: var(--gris-texto);
+    line-height: 1.4;
+  }
+
+  /* BADGE NIVEL */
+  .nivel-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .nivel-badge.inicial { background: rgba(255,140,0,0.12); border: 1px solid rgba(255,140,0,0.3); color: var(--naranja); }
+  .nivel-badge.funcional { background: rgba(200,240,0,0.10); border: 1px solid rgba(200,240,0,0.25); color: var(--acento); }
+  .nivel-badge.performance { background: rgba(0,229,122,0.10); border: 1px solid rgba(0,229,122,0.3); color: var(--verde); }
+
   /* ANIMACIÓN ENTRADA */
   .screen.active > * {
     animation: aparecer 0.4s ease forwards;
@@ -675,6 +751,64 @@
   <button class="btn-principal" onclick="siguienteDesdeRegistro()">SIGUIENTE →</button>
 </div>
 
+<!-- S1B: PERFIL ACTIVIDAD (preguntas de nivel) -->
+<div class="screen" id="s1b">
+  <div class="label">Paso 2 — Tu nivel</div>
+  <div class="titulo-grande" style="font-size:36px;margin-bottom:8px;">4 preguntas<br><span class="acento">rápidas</span></div>
+  <div class="subtitulo" style="margin-bottom:20px;">Esto nos permite ajustar los tests a tu nivel real. No hay respuestas correctas o incorrectas.</div>
+
+  <div class="timer-nivel">
+    <div class="timer-circulo" id="timerNivel">60</div>
+    <div class="timer-texto">Tomás el tiempo que necesitás.<br>Se completa solo en 60 segundos.</div>
+  </div>
+
+  <!-- Pregunta 1 -->
+  <div class="pregunta-nivel" id="pn1">
+    <div class="pregunta-texto">¿Con qué frecuencia hacés actividad física?</div>
+    <div class="opciones-nivel">
+      <button class="opcion-nivel" onclick="selOpcion(1,0,this)" data-pts="0">Casi nunca o esporádicamente</button>
+      <button class="opcion-nivel" onclick="selOpcion(1,1,this)" data-pts="1">1-2 veces por semana</button>
+      <button class="opcion-nivel" onclick="selOpcion(1,2,this)" data-pts="2">3-4 veces por semana</button>
+      <button class="opcion-nivel" onclick="selOpcion(1,3,this)" data-pts="3">5 o más veces por semana</button>
+    </div>
+  </div>
+
+  <!-- Pregunta 2 -->
+  <div class="pregunta-nivel" id="pn2">
+    <div class="pregunta-texto">¿Qué tipo de actividad hacés principalmente?</div>
+    <div class="opciones-nivel">
+      <button class="opcion-nivel" onclick="selOpcion(2,0,this)" data-pts="0">Caminatas o actividad suave</button>
+      <button class="opcion-nivel" onclick="selOpcion(2,1,this)" data-pts="1">Gym, pilates, natación o similar</button>
+      <button class="opcion-nivel" onclick="selOpcion(2,2,this)" data-pts="2">Deportes de equipo o artes marciales</button>
+      <button class="opcion-nivel" onclick="selOpcion(2,3,this)" data-pts="3">Entrenamiento de alta intensidad o competitivo</button>
+    </div>
+  </div>
+
+  <!-- Pregunta 3 -->
+  <div class="pregunta-nivel" id="pn3">
+    <div class="pregunta-texto">¿Cuánto tiempo llevas entrenando de forma regular?</div>
+    <div class="opciones-nivel">
+      <button class="opcion-nivel" onclick="selOpcion(3,0,this)" data-pts="0">No entreno o empecé hace poco</button>
+      <button class="opcion-nivel" onclick="selOpcion(3,1,this)" data-pts="1">Menos de 1 año</button>
+      <button class="opcion-nivel" onclick="selOpcion(3,2,this)" data-pts="2">Entre 1 y 3 años</button>
+      <button class="opcion-nivel" onclick="selOpcion(3,3,this)" data-pts="3">Más de 3 años</button>
+    </div>
+  </div>
+
+  <!-- Pregunta 4 -->
+  <div class="pregunta-nivel" id="pn4">
+    <div class="pregunta-texto">¿Cómo describís tu recuperación después de una sesión intensa?</div>
+    <div class="opciones-nivel">
+      <button class="opcion-nivel" onclick="selOpcion(4,0,this)" data-pts="0">Me cuesta mucho, necesito varios días</button>
+      <button class="opcion-nivel" onclick="selOpcion(4,1,this)" data-pts="1">Me recupero en 1-2 días</button>
+      <button class="opcion-nivel" onclick="selOpcion(4,2,this)" data-pts="2">Me recupero rápido, al día siguiente estoy bien</button>
+      <button class="opcion-nivel" onclick="selOpcion(4,3,this)" data-pts="3">Excelente, puedo entrenar al día siguiente sin problema</button>
+    </div>
+  </div>
+
+  <button class="btn-principal" onclick="siguienteDesdeNivel()" id="btnSigNivel">SIGUIENTE →</button>
+</div>
+
 <!-- S2: PREOCUPACIÓN -->
 <div class="screen" id="s2">
   <div class="label">Paso 2 — Tu foco</div>
@@ -809,11 +943,7 @@
   </button>
   <button class="btn-principal" onclick="enviarEmail()" id="btnEmail">ENVIAR INFORME AL EMAIL</button>
   <div class="sep"></div>
-  <div class="mensaje-box" style="text-align:center;">
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:8px;">¿Querés mejorar tus resultados?</div>
-    <div style="font-size:14px;color:var(--gris-texto);margin-bottom:14px;">Programa +L — Longevidad Funcional para adultos mayores de 50</div>
-    <button class="btn-principal" onclick="window.open('https://wa.me/543489536382?text=Hola%20Martín,%20hice%20el%20Test%20de%20Edad%20Funcional%20y%20quiero%20saber%20más%20sobre%20el%20Programa%20+L','_blank')" style="font-size:16px;padding:12px;">QUIERO SABER MÁS SOBRE +L</button>
-  </div>
+  <div id="ctaPersonalizado"></div>
   <button class="btn-secundario" onclick="irAInicio()" style="margin-top:10px;">Nueva evaluación</button>
 </div>
 
@@ -1173,6 +1303,7 @@ const TESTS = {
 let estado = {
   nombre: '', email: '', edad: 0, sexo: '',
   areaFoco: '',
+  nivel: 'inicial',
   testsSeleccionados: [],
   testsExtra: [],
   indexActual: 0,
@@ -1229,6 +1360,56 @@ async function siguienteDesdeRegistro() {
     }
   } catch(e) {}
 
+  // Ir a preguntas de nivel
+  iniciarTimerNivel();
+  mostrarPantalla('s1b');
+}
+
+// ===================== NIVEL DE ACTIVIDAD =====================
+let _timerNivel = null;
+let _respuestasNivel = { 1: null, 2: null, 3: null, 4: null };
+
+function iniciarTimerNivel() {
+  _respuestasNivel = { 1: null, 2: null, 3: null, 4: null };
+  // Limpiar selecciones previas
+  document.querySelectorAll('#s1b .opcion-nivel').forEach(b => b.classList.remove('sel'));
+  let seg = 60;
+  const el = document.getElementById('timerNivel');
+  if (_timerNivel) clearInterval(_timerNivel);
+  _timerNivel = setInterval(() => {
+    seg--;
+    if (el) {
+      el.textContent = seg;
+      if (seg <= 15) el.classList.add('urgente');
+      else el.classList.remove('urgente');
+    }
+    if (seg <= 0) {
+      clearInterval(_timerNivel);
+      // Auto-avanzar completando con 0 las preguntas no respondidas
+      siguienteDesdeNivel(true);
+    }
+  }, 1000);
+}
+
+function selOpcion(pregunta, pts, el) {
+  // Deseleccionar en la misma pregunta
+  document.querySelectorAll(`#pn${pregunta} .opcion-nivel`).forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  _respuestasNivel[pregunta] = pts;
+}
+
+function calcularNivel() {
+  const total = Object.values(_respuestasNivel).reduce((a, b) => a + (b !== null ? b : 0), 0);
+  // Máx posible: 12 pts (4 preguntas x 3 pts)
+  // Inicial: 0-4 | Funcional: 5-8 | Performance: 9-12
+  if (total >= 9) return 'performance';
+  if (total >= 5) return 'funcional';
+  return 'inicial';
+}
+
+function siguienteDesdeNivel(autoAvance = false) {
+  if (_timerNivel) clearInterval(_timerNivel);
+  estado.nivel = calcularNivel();
   mostrarPantalla('s2');
 }
 
@@ -1248,19 +1429,54 @@ function selArea(area, el) {
 
 function iniciarTests() {
   if (!estado.areaFoco) { alert('Elegí un área'); return; }
-  // 3 tests del área elegida + 1 de cada otra área
-  const areas = ['equilibrio', 'fuerza', 'cardio', 'movilidad'];
-  const otras = areas.filter(a => a !== estado.areaFoco);
-  const sel = [];
-  // 2 del área foco
-  sel.push(TESTS[estado.areaFoco][0]);
-  sel.push(TESTS[estado.areaFoco][1]);
-  // 1 de cada otra área
-  otras.forEach(a => sel.push(TESTS[a][0]));
-  // El 5to es el 3ro del área foco si existe
-  if (TESTS[estado.areaFoco][2]) sel.push(TESTS[estado.areaFoco][2]);
 
-  estado.testsSeleccionados = sel.slice(0, 5);
+  // Tests diferenciados por nivel
+  // Inicial (0-4): tests simples, SPPB / Rikli & Jones
+  // Funcional (5-8): tests intermedios, ACSM / YMCA
+  // Performance (9-12): tests exigentes, normativas atletas
+
+  const TESTS_POR_NIVEL = {
+    inicial: {
+      equilibrio: ['romberg', 'tandem', 'apoyo_mono', 'alcance_func', 'cuatro_cuadrados'],
+      fuerza:     ['silla_30', 'silla_5', 'flexiones', 'turkish', 'sentadilla_uni'],
+      cardio:     ['recuperacion_fc', 'escalon_ymca', 'ruffier', 'caminata_6min', 'escalon_chester'],
+      movilidad:  ['flexion_silla', 'rascado_espalda', 'tug', 'rotacion_tronco', 'movilidad_tobillo']
+    },
+    funcional: {
+      equilibrio: ['apoyo_mono', 'cuatro_cuadrados', 'romberg', 'tandem', 'alcance_func'],
+      fuerza:     ['flexiones', 'silla_30', 'sentadilla_uni', 'turkish', 'silla_5'],
+      cardio:     ['ruffier', 'escalon_ymca', 'recuperacion_fc', 'caminata_6min', 'escalon_chester'],
+      movilidad:  ['tug', 'movilidad_tobillo', 'flexion_silla', 'rascado_espalda', 'rotacion_tronco']
+    },
+    performance: {
+      equilibrio: ['cuatro_cuadrados', 'apoyo_mono', 'tandem', 'alcance_func', 'romberg'],
+      fuerza:     ['sentadilla_uni', 'turkish', 'flexiones', 'silla_30', 'silla_5'],
+      cardio:     ['escalon_chester', 'ruffier', 'caminata_6min', 'escalon_ymca', 'recuperacion_fc'],
+      movilidad:  ['movilidad_tobillo', 'tug', 'rotacion_tronco', 'rascado_espalda', 'flexion_silla']
+    }
+  };
+
+  const nivel = estado.nivel || 'inicial';
+  const ordenArea = TESTS_POR_NIVEL[nivel];
+  const todasLasAreas = ['equilibrio', 'fuerza', 'cardio', 'movilidad'];
+  const otras = todasLasAreas.filter(a => a !== estado.areaFoco);
+
+  // Función helper para obtener test por id
+  function getTest(area, id) {
+    return TESTS[area].find(t => t.id === id);
+  }
+
+  const sel = [];
+  // 2 tests del área foco (primeros 2 del orden por nivel)
+  const idsFoco = ordenArea[estado.areaFoco];
+  sel.push(getTest(estado.areaFoco, idsFoco[0]));
+  sel.push(getTest(estado.areaFoco, idsFoco[1]));
+  // 1 test de cada otra área (primero del orden por nivel)
+  otras.forEach(a => sel.push(getTest(a, ordenArea[a][0])));
+  // 5to test: tercero del área foco
+  if (idsFoco[2]) sel.push(getTest(estado.areaFoco, idsFoco[2]));
+
+  estado.testsSeleccionados = sel.filter(Boolean).slice(0, 5);
   estado.indexActual = 0;
   estado.resultados = {};
   mostrarProgreso();
@@ -1578,6 +1794,9 @@ function irAResultadoFinal(conExtra) {
   document.getElementById('mensajeFinal').innerHTML =
     `<strong>Tu fortaleza es ${NOMBRES_AREA[fuerte].toLowerCase()}.</strong><br><br>Área prioritaria: <strong>${NOMBRES_AREA[debil]}</strong><br>${recom[debil]}`;
 
+  // CTA personalizado por nivel y perfil
+  renderCTAPersonalizado(scores);
+
   // Guardar en Supabase
   guardarResultado(ef, scores, todosRes);
 
@@ -1701,6 +1920,78 @@ function dibujarRadar(scores) {
   });
 }
 
+// ===================== CTA PERSONALIZADO =====================
+function renderCTAPersonalizado(scores) {
+  const nivel = estado.nivel || 'inicial';
+  const esRetorno = estado.esRetorno;
+  const edad = estado.edad;
+  const cont = document.getElementById('ctaPersonalizado');
+
+  // Calcular si subió de nivel respecto a evaluación anterior (bonus)
+  const esSedentarioEnPerf = nivel === 'performance' && (Object.values(_respuestasNivel).reduce((a,b) => a+(b||0), 0)) >= 9;
+
+  let html = '';
+
+  if (esRetorno) {
+    // Ex alumno o usuario que vuelve — mensaje de retorno siempre primero
+    html = `
+    <div class="mensaje-box" style="text-align:center;border-color:rgba(200,240,0,0.3);">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:8px;">¡Bienvenido de vuelta!</div>
+      <div style="font-size:14px;color:var(--gris-texto);margin-bottom:14px;">Tu progreso quedó registrado. El siguiente paso es agendar una sesión de seguimiento con Martín.</div>
+      <button class="btn-principal" onclick="window.open('https://wa.me/543489536382?text=Hola%20Martín,%20volví%20a%20hacer%20el%20Test%20de%20Edad%20Funcional.%20Quiero%20ver%20mi%20progreso%20con%20vos.','_blank')" style="font-size:16px;padding:12px;">HABLAR CON MARTÍN →</button>
+    </div>`;
+  } else if (nivel === 'inicial') {
+    // Inicial → Programa +L (si tiene 50+) o introducción al movimiento
+    const msg50 = edad >= 50
+      ? 'El Programa +L está diseñado exactamente para este punto de partida. Funcional, seguro y con seguimiento real.'
+      : 'Tus resultados muestran que hay mucho por ganar con un programa estructurado y progresivo.';
+    const btnTxt = edad >= 50 ? 'QUIERO SABER MÁS SOBRE +L' : 'EMPEZAR A MEJORAR →';
+    const waMsg = edad >= 50
+      ? 'Hola%20Martín,%20hice%20el%20Test%20de%20Edad%20Funcional%20y%20quiero%20saber%20más%20sobre%20el%20Programa%20+L'
+      : 'Hola%20Martín,%20hice%20el%20Test%20de%20Edad%20Funcional%20y%20quiero%20empezar%20un%20programa%20de%20movimiento';
+    html = `
+    <div class="nivel-badge inicial">● NIVEL INICIAL</div>
+    <div class="mensaje-box" style="text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:8px;">¿Querés mejorar tus resultados?</div>
+      <div style="font-size:14px;color:var(--gris-texto);margin-bottom:14px;">${msg50}</div>
+      <button class="btn-principal" onclick="window.open('https://wa.me/543489536382?text=${waMsg}','_blank')" style="font-size:16px;padding:12px;">${btnTxt}</button>
+    </div>`;
+  } else if (nivel === 'funcional') {
+    // Funcional → +L si 50+, Rendimiento Ejecutivo si adulto activo
+    if (edad >= 50) {
+      html = `
+      <div class="nivel-badge funcional">● NIVEL FUNCIONAL</div>
+      <div class="mensaje-box" style="text-align:center;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:8px;">Estás en buen punto de partida</div>
+        <div style="font-size:14px;color:var(--gris-texto);margin-bottom:14px;">El Programa +L te va a dar estructura, progresión y seguimiento para llevar tu rendimiento al siguiente nivel.</div>
+        <button class="btn-principal" onclick="window.open('https://wa.me/543489536382?text=Hola%20Martín,%20hice%20el%20Test%20de%20Edad%20Funcional%20(nivel%20Funcional)%20y%20quiero%20saber%20más%20sobre%20el%20Programa%20+L','_blank')" style="font-size:16px;padding:12px;">QUIERO SABER MÁS SOBRE +L →</button>
+      </div>`;
+    } else {
+      html = `
+      <div class="nivel-badge funcional">● NIVEL FUNCIONAL</div>
+      <div class="mensaje-box" style="text-align:center;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:8px;">Tu rendimiento tiene impacto real</div>
+        <div style="font-size:14px;color:var(--gris-texto);margin-bottom:14px;">MCR Rendimiento Ejecutivo transforma tus métricas biológicas en ventaja operativa. Wearables + protocolo personalizado.</div>
+        <button class="btn-principal" onclick="window.open('https://wa.me/543489536382?text=Hola%20Martín,%20hice%20el%20Test%20de%20Edad%20Funcional%20(nivel%20Funcional)%20y%20me%20interesa%20MCR%20Rendimiento%20Ejecutivo','_blank')" style="font-size:16px;padding:12px;">QUIERO SABER MÁS →</button>
+      </div>`;
+    }
+  } else {
+    // Performance → Rendimiento Ejecutivo siempre
+    const msgEspecial = esSedentarioEnPerf
+      ? '¡Resultado extraordinario! Tu capacidad funcional está muy por encima del promedio. '
+      : '';
+    html = `
+    <div class="nivel-badge performance">● NIVEL PERFORMANCE</div>
+    <div class="mensaje-box" style="text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:8px;">${msgEspecial}Rendimiento de élite</div>
+      <div style="font-size:14px;color:var(--gris-texto);margin-bottom:14px;">MCR Rendimiento Ejecutivo es para vos: monitoreo biológico con RingConn, HeartMath y FreeStyle Libre. Informe semanal de estado operativo.</div>
+      <button class="btn-principal" onclick="window.open('https://wa.me/543489536382?text=Hola%20Martín,%20hice%20el%20Test%20de%20Edad%20Funcional%20(nivel%20Performance)%20y%20quiero%20saber%20más%20sobre%20Rendimiento%20Ejecutivo','_blank')" style="font-size:16px;padding:12px;">MCR RENDIMIENTO EJECUTIVO →</button>
+    </div>`;
+  }
+
+  cont.innerHTML = html;
+}
+
 // ===================== GUARDAR SUPABASE =====================
 async function guardarResultado(edadFuncional, scores, resultados) {
   try {
@@ -1710,6 +2001,7 @@ async function guardarResultado(edadFuncional, scores, resultados) {
       edad_cronologica: estado.edad,
       sexo: estado.sexo,
       area_foco: estado.areaFoco,
+      nivel_actividad: estado.nivel || 'inicial',
       edad_funcional: edadFuncional,
       scores: scores,
       resultados: resultados,
@@ -1901,7 +2193,9 @@ function cerrarModalAlumno() { document.getElementById('modalAlumno').classList.
 // ===================== NAV =====================
 function irAInicio() {
   ocultarProgreso();
-  estado = { nombre:'', email:'', edad:0, sexo:'', areaFoco:'', testsSeleccionados:[], testsExtra:[], indexActual:0, indexExtra:0, resultados:{}, resultadosExtra:{}, evalAnterior:null, esRetorno:false };
+  if (_timerNivel) clearInterval(_timerNivel);
+  _respuestasNivel = { 1: null, 2: null, 3: null, 4: null };
+  estado = { nombre:'', email:'', edad:0, sexo:'', areaFoco:'', nivel:'inicial', testsSeleccionados:[], testsExtra:[], indexActual:0, indexExtra:0, resultados:{}, resultadosExtra:{}, evalAnterior:null, esRetorno:false };
   document.querySelectorAll('.btn-opcion').forEach(b => b.classList.remove('seleccionado'));
   document.getElementById('bienvenidaRetornoEl').style.display = 'none';
   mostrarPantalla('s0');
