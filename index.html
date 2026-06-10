@@ -502,6 +502,91 @@
   /* SEPARADOR */
   .sep { height: 1px; background: var(--gris-borde); margin: 20px 0; }
 
+  /* PULSO LIVE */
+  @keyframes pulso {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* TIMER GUIADO RUFFIER */
+  .ruffier-guiado {
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .ruffier-guiado.visible { display: block; }
+  .fase-titulo {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--acento-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .fase-instruccion {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--blanco);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .timer-grande {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    line-height: 1;
+    color: var(--acento);
+    text-align: center;
+    margin-bottom: 8px;
+    transition: color 0.3s;
+  }
+  .timer-grande.urgente { color: var(--rojo); }
+  .timer-grande.verde { color: var(--verde); }
+  .timer-subtexto {
+    text-align: center;
+    font-size: 13px;
+    color: var(--gris-texto);
+    margin-bottom: 16px;
+    font-family: 'DM Mono', monospace;
+  }
+  .fases-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .fase-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gris-borde);
+    transition: background 0.3s;
+  }
+  .fase-dot.activa { background: var(--acento); }
+  .fase-dot.completa { background: var(--verde); }
+
+  /* TIEMPO ESTIMADO */
+  .tiempo-estimado {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(200,240,0,0.05);
+    border: 1px solid rgba(200,240,0,0.15);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--gris-texto);
+  }
+  .tiempo-estimado .tiempo-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--acento);
+    line-height: 1;
+  }
+
   /* PREGUNTAS NIVEL */
   .pregunta-nivel {
     margin-bottom: 28px;
@@ -696,13 +781,26 @@
 <!-- S0: INICIO -->
 <div class="screen active" id="s0">
   <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
-    <div class="label">Test gratuito · 10 minutos</div>
+    <div class="label">Test gratuito · 8 minutos</div>
     <div class="titulo-grande">¿Cuántos<br>años tiene<br><span class="acento">tu cuerpo?</span></div>
-    <div class="subtitulo">Descubrí tu edad funcional real con tests validados científicamente. Resultado inmediato y personalizado.</div>
-    <button class="btn-principal" onclick="irARegistro()">COMENZAR EVALUACIÓN</button>
-    <button class="btn-secundario" onclick="abrirLogin()">Acceso profesional →</button>
+    <div class="subtitulo">La mayoría de las personas descubre que su cuerpo tiene entre 5 y 12 años más —o menos— que su edad real. ¿Querés saber el tuyo?</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding:12px 16px;background:var(--gris-oscuro);border-radius:10px;border:1px solid var(--gris-borde);">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--acento);line-height:1;" id="contadorS0">78</div>
+      <div style="font-size:13px;color:var(--gris-texto);line-height:1.5;">evaluaciones<br>completadas</div>
+      <div style="margin-left:auto;display:flex;gap:4px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--verde);animation:pulso 2s infinite;"></div>
+        <div style="font-size:11px;color:var(--verde);font-family:'DM Mono',monospace;">EN VIVO</div>
+      </div>
+    </div>
+    <button class="btn-principal" onclick="irARegistro()">DESCUBRIR MI EDAD FUNCIONAL →</button>
+    <div style="display:flex;justify-content:center;gap:24px;margin-top:16px;font-size:12px;color:var(--gris-texto);font-family:'DM Mono',monospace;">
+      <span>✓ Gratis</span>
+      <span>✓ Sin registro previo</span>
+      <span>✓ Resultado inmediato</span>
+    </div>
+    <button class="btn-secundario" onclick="abrirLogin()" style="margin-top:16px;">Acceso profesional →</button>
   </div>
-  <div style="text-align:center; padding-top:24px;">
+  <div style="text-align:center; padding-top:16px;">
     <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gris-texto);letter-spacing:2px;">MCR BIOHACKING · @mcr.biohacking</div>
   </div>
 </div>
@@ -811,9 +909,13 @@
 
 <!-- S2: PREOCUPACIÓN -->
 <div class="screen" id="s2">
-  <div class="label">Paso 2 — Tu foco</div>
+  <div class="label">Paso 3 — Tu foco</div>
   <div class="titulo-grande" style="font-size:40px;margin-bottom:8px;">¿Qué te<br>preocupa<br>más?</div>
-  <div class="subtitulo">Elegí una área y armamos tu evaluación personalizada.</div>
+  <div class="subtitulo">Elegí un área y armamos tu evaluación personalizada.</div>
+  <div class="tiempo-estimado" id="tiempoEstimadoS2">
+    <div class="tiempo-num" id="tiempoNum">8</div>
+    <div>minutos aproximadamente<br><span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--acento-dim);" id="tiempoDetalle">5 tests + 3 tests del análisis completo</span></div>
+  </div>
 
   <button class="btn-opcion" onclick="selArea('equilibrio',this)">
     <span class="icono">⚖️</span>
@@ -871,12 +973,12 @@
   <div class="areas-grid" id="areasGridParcial"></div>
   <div class="mensaje-box" id="mensajeParcial"></div>
   <div style="background:rgba(200,240,0,0.06);border:1px solid rgba(200,240,0,0.15);border-radius:10px;padding:14px;margin-bottom:20px;font-size:13px;color:var(--blanco-suave);line-height:1.6;">
-    ⚠️ <strong>Este es un resultado preliminar</strong> basado en 5 tests. Con 3 tests adicionales obtenés un análisis más preciso y el radar completo de tus 4 áreas.
+    🔬 <strong>Resultado preliminar</strong> — 5 tests completados. Falta el área más débil para cerrar el perfil completo y el radar de 4 dimensiones.
   </div>
   <div class="sep"></div>
-  <div class="label">¿Querés el análisis completo?</div>
-  <div class="subtitulo" style="margin-bottom:16px;">3 tests adicionales enfocados en tu área más débil. Toma 5 minutos más.</div>
-  <button class="btn-principal" onclick="iniciarTestsExtra()" id="btnExtraAuto">SÍ, QUIERO EL ANÁLISIS COMPLETO →</button>
+  <div class="label">Cerrá el perfil completo</div>
+  <div class="subtitulo" style="margin-bottom:16px;">3 tests más en tu área más débil. <strong style="color:var(--acento);">~5 minutos.</strong> El radar final muestra las 4 dimensiones.</div>
+  <button class="btn-principal" onclick="iniciarTestsExtra()" id="btnExtraAuto">COMPLETAR ANÁLISIS →</button>
 
   <!-- Selector de área opcional -->
   <div id="selectorAreaExtra" style="display:none;margin-top:12px;">
@@ -936,6 +1038,7 @@
   <div class="label">Recibí tu informe</div>
   <div class="campo">
     <input type="email" id="inEmailFinal" placeholder="tu@email.com" style="font-size:16px;">
+    <div style="font-size:11px;color:var(--gris-texto);margin-top:6px;font-family:'DM Mono',monospace;">🔒 Tu información es privada y no se comparte con terceros</div>
   </div>
   <button class="btn-wa" onclick="enviarWA()">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -1144,11 +1247,12 @@ const TESTS = {
       id: 'ruffier',
       nombre: 'Test de Ruffier-Dickson',
       area: 'Cardio',
-      instruccion: 'Medí tu FC en reposo (P1). Realizá 30 sentadillas en 45 segundos. Medí tu FC inmediatamente (P2) y a 1 minuto de recuperación (P3). Índice = (P1 + P2 + P3 - 200) / 10',
+      timerGuiado: true,
+      instruccion: 'Test de capacidad cardíaca en 3 fases. El asistente te va a guiar paso a paso: reposo → 30 sentadillas → recuperación. Usá el botón INICIAR GUÍA para empezar.',
       campos: [
-        { key: 'p1', label: 'FC reposo (P1) — latidos/min', tipo: 'number', placeholder: 'Ej: 68' },
-        { key: 'p2', label: 'FC post esfuerzo (P2) — latidos/min', tipo: 'number', placeholder: 'Ej: 110' },
-        { key: 'p3', label: 'FC 1 min recuperación (P3) — latidos/min', tipo: 'number', placeholder: 'Ej: 85' }
+        { key: 'p1', label: 'FC reposo — P1 (latidos/min)', tipo: 'number', placeholder: 'Ej: 68' },
+        { key: 'p2', label: 'FC post esfuerzo — P2 (latidos/min)', tipo: 'number', placeholder: 'Ej: 110' },
+        { key: 'p3', label: 'FC 1 min recuperación — P3 (latidos/min)', tipo: 'number', placeholder: 'Ej: 85' }
       ],
       calcular: (v) => {
         const p1 = parseFloat(v.p1) || 0, p2 = parseFloat(v.p2) || 0, p3 = parseFloat(v.p3) || 0;
@@ -1324,6 +1428,29 @@ function mostrarPantalla(id) {
 // ===================== REGISTRO =====================
 function irARegistro() { mostrarPantalla('s1'); }
 
+function animarContadorS0() {
+  // Animar contador desde base hasta número actual
+  const el = document.getElementById('contadorS0');
+  if (!el) return;
+  const base = 78;
+  let actual = base;
+  el.textContent = actual;
+  // Intentar sumar los del Supabase
+  sb.from(TABLA).select('id', { count: 'exact', head: true }).then(({ count }) => {
+    if (count && count > 0) {
+      const destino = base + count;
+      let i = base;
+      const step = setInterval(() => {
+        i++;
+        el.textContent = i;
+        if (i >= destino) clearInterval(step);
+      }, 30);
+    }
+  }).catch(() => {});
+}
+// Ejecutar al cargar
+document.addEventListener('DOMContentLoaded', () => { setTimeout(animarContadorS0, 800); });
+
 function selSexo(s, el) {
   document.querySelectorAll('#s1 .btn-opcion').forEach(b => b.classList.remove('seleccionado'));
   el.classList.add('seleccionado');
@@ -1410,6 +1537,13 @@ function calcularNivel() {
 function siguienteDesdeNivel(autoAvance = false) {
   if (_timerNivel) clearInterval(_timerNivel);
   estado.nivel = calcularNivel();
+  // Actualizar tiempo estimado según nivel
+  const tiempos = { inicial: '8', funcional: '10', performance: '12' };
+  const detalles = { inicial: '5 tests + 3 del análisis completo', funcional: '5 tests + 3 tests adicionales', performance: '5 tests + 3 tests de alta exigencia' };
+  const el = document.getElementById('tiempoNum');
+  const det = document.getElementById('tiempoDetalle');
+  if(el) el.textContent = tiempos[estado.nivel] || '8';
+  if(det) det.textContent = detalles[estado.nivel] || '';
   mostrarPantalla('s2');
 }
 
@@ -1513,6 +1647,39 @@ function mostrarTestActual() {
 function renderInputs(test, containerId) {
   const cont = document.getElementById(containerId);
   cont.innerHTML = '';
+
+  // Test con timer guiado (Ruffier-Dickson)
+  if (test.timerGuiado) {
+    cont.innerHTML = `
+      <div class="ruffier-guiado visible" id="ruffierGuiado">
+        <div class="fases-dots">
+          <div class="fase-dot" id="dot0"></div>
+          <div class="fase-dot" id="dot1"></div>
+          <div class="fase-dot" id="dot2"></div>
+          <div class="fase-dot" id="dot3"></div>
+        </div>
+        <div class="fase-titulo" id="faseTitulo">PREPARATE</div>
+        <div class="fase-instruccion" id="faseInstruccion">Sentate, respirá tranquilo y medí tu FC en reposo contando los latidos por 15 segundos y multiplicando por 4.</div>
+        <div class="timer-grande verde" id="timerRuffier">—</div>
+        <div class="timer-subtexto" id="timerSubtexto">Presioná INICIAR cuando estés listo</div>
+        <button class="btn-principal" id="btnRuffierAccion" onclick="ruffierSiguienteFase()" style="margin-top:0;">INICIAR GUÍA →</button>
+      </div>
+      <div id="ruffierInputs" style="display:none;">`;
+    test.campos.forEach(campo => {
+      const div = document.createElement('div');
+      div.className = 'input-resultado';
+      div.innerHTML = `<label>${campo.label}</label>
+        <input type="${campo.tipo}" id="campo_${campo.key}" placeholder="${campo.placeholder}" 
+          style="width:100%;background:var(--gris-oscuro);border:1px solid var(--gris-borde);border-radius:8px;padding:14px 16px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--blanco);outline:none;" />`;
+      cont.appendChild(div);
+    });
+    const closeDiv = document.createElement('div');
+    closeDiv.innerHTML = '</div>';
+    cont.appendChild(closeDiv);
+    return;
+  }
+
+  // Tests normales
   test.campos.forEach(campo => {
     const div = document.createElement('div');
     div.className = 'input-resultado';
@@ -1521,6 +1688,120 @@ function renderInputs(test, containerId) {
         style="width:100%;background:var(--gris-oscuro);border:1px solid var(--gris-borde);border-radius:8px;padding:14px 16px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--blanco);outline:none;" />`;
     cont.appendChild(div);
   });
+}
+
+// ===================== TIMER RUFFIER-DICKSON =====================
+let _ruffierTimer = null;
+let _ruffierFase = 0;
+// Fases: 0=intro, 1=reposo(medición P1), 2=sentadillas(45s), 3=post(medición P2), 4=recuperación(60s), 5=final(medición P3), 6=listo
+const _ruffierFases = [
+  { titulo: 'FASE 1 — REPOSO', instruccion: 'Sentate tranquilo. Medí tu FC contando latidos en 15 segundos y multiplicá por 4. Ingresá el valor en P1 cuando estés listo.', boton: 'YA TENGO MI FC DE REPOSO →', timer: 0, dot: 0 },
+  { titulo: 'FASE 2 — ESFUERZO', instruccion: '30 sentadillas en 45 segundos. Bajá hasta paralelo, subí completamente. El timer empieza cuando presionés INICIAR.', boton: 'INICIAR 30 SENTADILLAS →', timer: 0, dot: 1 },
+  { titulo: '¡PARA! MEDÍ TU FC AHORA', instruccion: 'Detené todo. Medí tu FC inmediatamente (15 segundos × 4). Ingresá el valor en P2. Tenés 20 segundos antes de la recuperación.', boton: 'YA TENGO MI FC POST ESFUERZO →', timer: 20, dot: 1, urgente: true },
+  { titulo: 'FASE 3 — RECUPERACIÓN', instruccion: 'Sentate y no te muevas. Esperá exactamente 1 minuto y medí tu FC nuevamente para P3.', boton: '', timer: 60, dot: 2 },
+  { titulo: 'MEDÍ TU FC DE RECUPERACIÓN', instruccion: 'El minuto terminó. Medí tu FC ahora (15 segundos × 4) e ingresá el valor en P3.', boton: 'YA TENGO MI FC DE RECUPERACIÓN →', timer: 0, dot: 3 },
+];
+
+function ruffierSiguienteFase() {
+  if (_ruffierTimer) clearInterval(_ruffierTimer);
+
+  // Fase especial: sentadillas con timer 45s
+  if (_ruffierFase === 1) {
+    _ruffierFase = 2; // post sentadillas
+    iniciarTimerRuffier(45, () => {
+      // Al terminar 45s → mostrar fase medición P2
+      mostrarFaseRuffier(2);
+    });
+    // Mostrar timer corriendo
+    const tit = document.getElementById('faseTitulo');
+    const inst = document.getElementById('faseInstruccion');
+    const btn = document.getElementById('btnRuffierAccion');
+    if(tit) tit.textContent = '¡SENTADILLAS!';
+    if(inst) inst.textContent = '30 sentadillas. ¡Bajá y subí con ritmo constante!';
+    if(btn) btn.style.display = 'none';
+    actualizarDotsRuffier(1);
+    return;
+  }
+
+  mostrarFaseRuffier(_ruffierFase);
+  _ruffierFase++;
+}
+
+function mostrarFaseRuffier(idx) {
+  if (idx >= _ruffierFases.length) {
+    // Todas las fases completas — mostrar inputs
+    finalizarRuffier();
+    return;
+  }
+  const fase = _ruffierFases[idx];
+  const tit = document.getElementById('faseTitulo');
+  const inst = document.getElementById('faseInstruccion');
+  const timer = document.getElementById('timerRuffier');
+  const sub = document.getElementById('timerSubtexto');
+  const btn = document.getElementById('btnRuffierAccion');
+
+  if(tit) tit.textContent = fase.titulo;
+  if(inst) inst.textContent = fase.instruccion;
+  if(btn) { btn.style.display = fase.boton ? 'block' : 'none'; btn.textContent = fase.boton; }
+  actualizarDotsRuffier(fase.dot);
+
+  if (fase.timer > 0) {
+    if(btn) btn.style.display = 'none';
+    iniciarTimerRuffier(fase.timer, () => {
+      if(idx === 2) { // post esfuerzo 20s
+        mostrarFaseRuffier(2); // mostrar medición P2
+        _ruffierFase = 3;
+      } else if(idx === 3) { // recuperación 60s
+        mostrarFaseRuffier(4); // mostrar medición P3
+        _ruffierFase = 5;
+      }
+    });
+    if(sub) sub.textContent = fase.urgente ? '¡Medí tu FC ahora!' : 'Cronómetro activo — no te muevas';
+  } else {
+    if(timer) { timer.textContent = '—'; timer.className = 'timer-grande verde'; }
+    if(sub) sub.textContent = idx === 0 ? 'Medí tu FC en reposo primero' : 'Ingresá el valor abajo cuando estés listo';
+  }
+}
+
+function iniciarTimerRuffier(segundos, callback) {
+  let s = segundos;
+  const el = document.getElementById('timerRuffier');
+  const sub = document.getElementById('timerSubtexto');
+  if(el) { el.textContent = s; el.className = s <= 10 ? 'timer-grande urgente' : s === segundos ? 'timer-grande verde' : 'timer-grande'; }
+  _ruffierTimer = setInterval(() => {
+    s--;
+    if(el) {
+      el.textContent = s;
+      el.className = s <= 10 ? 'timer-grande urgente' : 'timer-grande';
+    }
+    if(sub && s > 0) sub.textContent = s <= 10 ? '¡Casi!' : `${s} segundos...`;
+    if(s <= 0) {
+      clearInterval(_ruffierTimer);
+      if(el) { el.textContent = '✓'; el.className = 'timer-grande verde'; }
+      if(sub) sub.textContent = '¡Tiempo!';
+      setTimeout(() => callback && callback(), 400);
+    }
+  }, 1000);
+}
+
+function actualizarDotsRuffier(activo) {
+  for(let i=0;i<4;i++) {
+    const d = document.getElementById(`dot${i}`);
+    if(!d) continue;
+    d.className = i < activo ? 'fase-dot completa' : i === activo ? 'fase-dot activa' : 'fase-dot';
+  }
+}
+
+function finalizarRuffier() {
+  if(_ruffierTimer) clearInterval(_ruffierTimer);
+  const guiado = document.getElementById('ruffierGuiado');
+  const inputs = document.getElementById('ruffierInputs');
+  if(guiado) guiado.style.display = 'none';
+  if(inputs) inputs.style.display = 'block';
+  // Marcar todos los dots como completos
+  actualizarDotsRuffier(4);
+  // Scroll a inputs
+  if(inputs) inputs.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function siguienteTest() {
@@ -1561,6 +1842,12 @@ function saltarTest() {
 }
 
 // ===================== SCORING =====================
+// ⚠️  FÓRMULA EF — NO MODIFICAR
+// Rangos por franja etaria validados y congelados el 10/06/2026.
+// Cambiar esta función invalida la comparación de progresión
+// entre evaluaciones históricas guardadas en Supabase.
+// Podés cambiar pantallas, CTAs, tests y dashboard sin problema.
+// Solo esta función queda fija.
 function calcularEdadFuncional(resultados, edadCron) {
   const puntos = Object.values(resultados).map(r => r.puntos || 0);
   const total = puntos.reduce((a,b) => a+b, 0);
@@ -2162,6 +2449,16 @@ function verAlumno(idx) {
   const alumno = evals[0];
   const det = document.getElementById('alumnoDetalle');
   const scores = alumno.scores || {};
+
+  // Recalcular EF con fórmula actual para mostrar datos consistentes
+  // Los datos de Supabase se conservan intactos — solo la visualización usa la fórmula nueva
+  function efVisual(ev) {
+    if (ev.resultados && Object.keys(ev.resultados).length > 0) {
+      return calcularEdadFuncional(ev.resultados, ev.edad_cronologica);
+    }
+    return ev.edad_funcional; // fallback si no hay resultados detallados
+  }
+
   det.innerHTML = `
     <div style="margin-bottom:16px;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;">${alumno.nombre}</div>
@@ -2181,17 +2478,18 @@ function verAlumno(idx) {
     <div class="label" style="margin-bottom:8px;">Historial de evaluaciones</div>
     ${evals.map((ev, i) => {
       const fecha = new Date(ev.created_at).toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' });
+      const efMostrar = efVisual(ev);
       const anterior = evals[i+1];
-      const delta = anterior ? anterior.edad_funcional - ev.edad_funcional : null;
+      const deltaVisual = anterior ? efVisual(anterior) - efMostrar : null;
       return `<div class="eval-card">
         <div class="eval-card-header">
           <div>
             <div class="eval-card-fecha">${fecha}</div>
-            <div style="font-size:12px;color:var(--gris-texto);">Foco: ${NOMBRES_AREA[ev.area_foco] || '--'}</div>
+            <div style="font-size:12px;color:var(--gris-texto);">Foco: ${NOMBRES_AREA[ev.area_foco] || '--'} · Nivel: ${ev.nivel_actividad || '--'}</div>
           </div>
           <div>
-            <div class="eval-card-edad">${ev.edad_funcional} años</div>
-            ${delta !== null ? `<div style="font-size:12px;text-align:right;color:${delta > 0 ? 'var(--verde)' : delta < 0 ? 'var(--rojo)' : 'var(--gris-texto)'};">${delta > 0 ? '↑ +'+delta : delta < 0 ? '↓ '+delta : '='}</div>` : ''}
+            <div class="eval-card-edad">${efMostrar} años</div>
+            ${deltaVisual !== null ? `<div style="font-size:12px;text-align:right;color:${deltaVisual > 0 ? 'var(--verde)' : deltaVisual < 0 ? 'var(--rojo)' : 'var(--gris-texto)'};">${deltaVisual > 0 ? '↑ +'+deltaVisual : deltaVisual < 0 ? '↓ '+deltaVisual : '='}</div>` : ''}
           </div>
         </div>
       </div>`;
@@ -2205,6 +2503,8 @@ function cerrarModalAlumno() { document.getElementById('modalAlumno').classList.
 function irAInicio() {
   ocultarProgreso();
   if (_timerNivel) clearInterval(_timerNivel);
+  if (_ruffierTimer) clearInterval(_ruffierTimer);
+  _ruffierFase = 0;
   _respuestasNivel = { 1: null, 2: null, 3: null, 4: null };
   estado = { nombre:'', email:'', edad:0, sexo:'', areaFoco:'', nivel:'inicial', testsSeleccionados:[], testsExtra:[], indexActual:0, indexExtra:0, resultados:{}, resultadosExtra:{}, evalAnterior:null, esRetorno:false };
   document.querySelectorAll('.btn-opcion').forEach(b => b.classList.remove('seleccionado'));
