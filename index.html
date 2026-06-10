@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1566,9 +1566,20 @@ function calcularEdadFuncional(resultados, edadCron) {
   const total = puntos.reduce((a,b) => a+b, 0);
   const max = puntos.length * 4;
   const pct = max > 0 ? total / max : 0.5;
-  // Escala: 0% → cronológica+20, 100% → cronológica-15
-  const resultado = Math.round(edadCron + (20 - pct * 35));
-  return Math.max(18, resultado); // mínimo biológico 18
+  // Rangos realistas por franja etaria (normativas internacionales)
+  // pct=1.0 → EF mínima del rango (mejor resultado)
+  // pct=0.0 → EF máxima del rango (resultado más bajo)
+  const rangos = [
+    { hasta: 29,  min: 18, max: 28 },
+    { hasta: 39,  min: 27, max: 37 },
+    { hasta: 49,  min: 34, max: 46 },
+    { hasta: 59,  min: 43, max: 57 },
+    { hasta: 69,  min: 53, max: 68 },
+    { hasta: 79,  min: 62, max: 77 },
+    { hasta: 120, min: 72, max: 88 }
+  ];
+  const rango = rangos.find(r => edadCron <= r.hasta) || rangos[rangos.length - 1];
+  return Math.round(rango.max - (pct * (rango.max - rango.min)));
 }
 
 function calcularScoresPorArea(resultados) {
