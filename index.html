@@ -735,6 +735,75 @@
     font-size: 24px;
     color: var(--acento);
   }
+
+  /* ÁREA DISPONIBLE PARA EXPLORAR */
+  .btn-area-extra {
+    width: 100%;
+    background: var(--gris-oscuro);
+    border: 1px solid var(--gris-borde);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--blanco);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .btn-area-extra:hover { border-color: var(--acento); background: rgba(200,240,0,0.05); }
+  .btn-area-extra .area-extra-left { display: flex; align-items: center; gap: 12px; }
+  .btn-area-extra .area-extra-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--acento-dim);
+    background: rgba(200,240,0,0.08);
+    border: 1px solid rgba(200,240,0,0.15);
+    border-radius: 4px;
+    padding: 2px 6px;
+  }
+  .btn-area-extra.completa {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+  }
+  .btn-area-extra.completa .area-extra-badge {
+    color: var(--verde);
+    background: rgba(0,229,122,0.08);
+    border-color: rgba(0,229,122,0.2);
+  }
+
+  /* PROGRESO BATERÍA COMPLETA */
+  .bateria-progreso {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .bateria-barra {
+    flex: 1;
+    height: 4px;
+    background: var(--gris-medio);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .bateria-fill {
+    height: 100%;
+    background: var(--acento);
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+  .bateria-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--acento);
+    min-width: 36px;
+    text-align: right;
+  }
 </style>
 </head>
 <body>
@@ -1047,6 +1116,17 @@
   <button class="btn-principal" onclick="enviarEmail()" id="btnEmail">ENVIAR INFORME AL EMAIL</button>
   <div class="sep"></div>
   <div id="ctaPersonalizado"></div>
+
+  <!-- EXPLORAR MÁS ÁREAS -->
+  <div id="explorarMasBloque" style="display:none;margin-top:8px;">
+    <div class="sep"></div>
+    <div class="label">Seguir explorando</div>
+    <div style="font-size:13px;color:var(--gris-texto);margin-bottom:14px;line-height:1.6;">
+      Cada área adicional afina tu EF y completa el radar. Un atleta puede hacer los 20 tests para el perfil más preciso.
+    </div>
+    <div id="areasDisponibles"></div>
+  </div>
+
   <button class="btn-secundario" onclick="irAInicio()" style="margin-top:10px;">Nueva evaluación</button>
 </div>
 
@@ -2048,6 +2128,9 @@ function saltarTestExtra() {
   }
 }
 
+// irAResultadoFinal ya maneja conExtra=true mergeando resultados+resultadosExtra
+// agregarTestsArea acumula en resultadosExtra sin resetear — correcto
+
 // ===================== RESULTADO FINAL =====================
 function irAResultadoFinal(conExtra) {
   ocultarProgreso();
@@ -2105,7 +2188,99 @@ function irAResultadoFinal(conExtra) {
     lanzarConfetti();
   }
 
+  // Mostrar áreas disponibles para explorar
+  renderAreasDisponibles(todosRes, scores);
+
   mostrarPantalla('s6');
+}
+
+// ===================== EXPLORAR MÁS ÁREAS =====================
+function renderAreasDisponibles(todosRes, scores) {
+  const AREAS_INFO = {
+    equilibrio: { icono: '⚖️', nombre: 'Equilibrio', desc: 'Estabilidad, coordinación, riesgo de caídas' },
+    fuerza:     { icono: '💪', nombre: 'Fuerza',     desc: 'Masa muscular, potencia, sarcopenia' },
+    cardio:     { icono: '❤️', nombre: 'Cardio',     desc: 'Resistencia, recuperación, VO₂ máx' },
+    movilidad:  { icono: '🤸', nombre: 'Movilidad',  desc: 'Flexibilidad, rango articular, rigidez' }
+  };
+
+  // Calcular qué áreas tienen datos y cuántos tests
+  const areasDone = {};
+  Object.values(todosRes).forEach(r => {
+    const a = r.area ? r.area.toLowerCase() : '';
+    if (!areasDone[a]) areasDone[a] = 0;
+    if (r.puntos > 0) areasDone[a]++;
+  });
+
+  // Tests disponibles por área (no usados aún)
+  const usados = Object.keys(todosRes);
+  const disponibles = {};
+  ['equilibrio','fuerza','cardio','movilidad'].forEach(area => {
+    const restantes = TESTS[area].filter(t => !usados.includes(t.id));
+    disponibles[area] = restantes.length;
+  });
+
+  // Total tests hechos vs posibles (20)
+  const totalHechos = usados.length;
+  const pct = Math.round((totalHechos / 20) * 100);
+
+  const bloque = document.getElementById('explorarMasBloque');
+  const cont = document.getElementById('areasDisponibles');
+  if (!bloque || !cont) return;
+
+  // Siempre mostrar si hay áreas con tests disponibles
+  const hayDisponibles = Object.values(disponibles).some(n => n > 0);
+  if (!hayDisponibles) { bloque.style.display = 'none'; return; }
+
+  bloque.style.display = 'block';
+
+  // Barra de progreso batería completa
+  let html = `
+    <div class="bateria-progreso">
+      <div style="font-size:12px;color:var(--gris-texto);font-family:'DM Mono',monospace;white-space:nowrap;">${totalHechos}/20 tests</div>
+      <div class="bateria-barra"><div class="bateria-fill" style="width:${pct}%"></div></div>
+      <div class="bateria-pct">${pct}%</div>
+    </div>`;
+
+  ['equilibrio','fuerza','cardio','movilidad'].forEach(area => {
+    const info = AREAS_INFO[area];
+    const nDisp = disponibles[area];
+    const nHecho = areasDone[area] || 0;
+    const completa = nDisp === 0;
+
+    html += `<button class="btn-area-extra${completa ? ' completa' : ''}" 
+      onclick="${completa ? '' : `agregarTestsArea('${area}')`}">
+      <div class="area-extra-left">
+        <span style="font-size:22px;">${info.icono}</span>
+        <div>
+          <div style="font-weight:500;margin-bottom:2px;">${info.nombre}</div>
+          <div style="font-size:12px;color:var(--gris-texto);">${info.desc}</div>
+        </div>
+      </div>
+      <div class="area-extra-badge">${completa ? '✓ COMPLETA' : `+${nDisp} tests`}</div>
+    </button>`;
+  });
+
+  cont.innerHTML = html;
+}
+
+function agregarTestsArea(area) {
+  // Obtener tests no usados de esa área
+  const usados = Object.keys({ ...estado.resultados, ...estado.resultadosExtra });
+  const extras = TESTS[area].filter(t => !usados.includes(t.id));
+  if (extras.length === 0) return;
+
+  // Configurar como tests extra y lanzar s5
+  estado.testsExtra = extras;
+  estado.indexExtra = 0;
+  // No resetear resultadosExtra — acumular
+  mostrarProgreso();
+
+  // Actualizar label de s5
+  const lbl = document.querySelector('#s5 .label');
+  if (lbl) lbl.textContent = `Explorando ${area.charAt(0).toUpperCase()+area.slice(1)}`;
+
+  mostrarTestExtra();
+  mostrarPantalla('s5');
 }
 
 // ===================== RADAR =====================
